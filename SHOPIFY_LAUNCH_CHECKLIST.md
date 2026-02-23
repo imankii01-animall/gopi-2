@@ -2,6 +2,15 @@
 
 ## 1. Theme File Upload
 
+Preferred method (recommended):
+
+1. From this package folder run:
+   - `./scripts/validate-theme-pack.sh`
+   - `./scripts/install-into-dawn.sh /absolute/path/to/your-dawn-theme`
+   - `./scripts/e2e-check.sh /absolute/path/to/your-dawn-theme`
+
+Manual method (if needed):
+
 Copy these files into your Dawn theme:
 - `assets/animall-gopi.css`
 - `assets/animall-gopi.js`

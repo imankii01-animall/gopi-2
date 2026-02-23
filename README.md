@@ -19,6 +19,8 @@ Copy these files into your Dawn theme with the same paths:
 
 Also included:
 - `scripts/validate-theme-pack.sh` (local validation before upload)
+- `scripts/install-into-dawn.sh` (safe install into existing Dawn theme + backup)
+- `scripts/e2e-check.sh` (post-install integrity check against target Dawn theme)
 - `SHOPIFY_LAUNCH_CHECKLIST.md` (go-live runbook)
 
 ## Shopify Setup
@@ -42,6 +44,36 @@ It checks:
 - JavaScript syntax.
 - Liquid schema JSON validity.
 - Section settings references match schema IDs.
+
+## End-to-End Commands
+
+Use this sequence for a full handoff.
+
+1. Validate the pack:
+
+```bash
+cd /Users/ankitsingh/Development/Caller/animall-gopi-shopify-theme
+./scripts/validate-theme-pack.sh
+```
+
+2. Install into your Dawn theme folder:
+
+```bash
+./scripts/install-into-dawn.sh /absolute/path/to/your-dawn-theme
+```
+
+3. Verify installed files match:
+
+```bash
+./scripts/e2e-check.sh /absolute/path/to/your-dawn-theme
+```
+
+4. Push to Shopify (if Shopify CLI is installed and authenticated):
+
+```bash
+cd /absolute/path/to/your-dawn-theme
+shopify theme push
+```
 
 ## Theme Editor Controls (New)
 
@@ -79,5 +111,3 @@ Optional metafields (`custom` namespace):
 ## Important Note
 
 Phone verification in this theme is a client-side verification gate (10-digit validation + verify action). For real OTP delivery, connect a dedicated OTP app/service in a later phase.
-# gopi-2
-# gopi-2
