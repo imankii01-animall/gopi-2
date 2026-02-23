@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "animall-gopi-order-flow",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

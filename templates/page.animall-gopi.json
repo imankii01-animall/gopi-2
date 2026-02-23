@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "animall-gopi-marketplace",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

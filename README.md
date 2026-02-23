@@ -17,6 +17,10 @@ Copy these files into your Dawn theme with the same paths:
 - `templates/page.animall-gopi.json`
 - `templates/product.animall-gopi-order.json`
 
+Also included:
+- `scripts/validate-theme-pack.sh` (local validation before upload)
+- `SHOPIFY_LAUNCH_CHECKLIST.md` (go-live runbook)
+
 ## Shopify Setup
 
 1. In Shopify Admin, open your theme and upload the files above.
@@ -25,10 +29,25 @@ Copy these files into your Dawn theme with the same paths:
 4. Assign product template `product.animall-gopi-order` to ghee products.
 5. Ensure those products are available on Online Store sales channel.
 
+## Quick Validation
+
+Run this before uploading files:
+
+```bash
+./scripts/validate-theme-pack.sh
+```
+
+It checks:
+- Required files exist.
+- JavaScript syntax.
+- Liquid schema JSON validity.
+- Section settings references match schema IDs.
+
 ## Theme Editor Controls (New)
 
 Both sections now support:
 - Copy labels/messages (buttons, headings, validation text, sold-out text).
+- Form field labels/placeholders (name, phone, address, city, state, PIN, unit label).
 - Color tokens (background, card, border, text, button, badge, accent).
 
 This lets you match your existing Dawn branding without code edits.

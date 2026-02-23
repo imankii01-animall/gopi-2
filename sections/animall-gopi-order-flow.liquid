@@ -1,0 +1,632 @@
+{{ 'animall-gopi.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'animall-gopi.js' | asset_url }}" defer="defer"></script>
+
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+{%- assign tag_location = '' -%}
+{%- assign tag_type = '' -%}
+{%- assign tag_method = '' -%}
+
+{%- for tag in product.tags -%}
+  {%- assign normalized_tag = tag | downcase -%}
+
+  {%- if tag_location == '' and normalized_tag contains 'location:' -%}
+    {%- assign tag_location = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+  {%- elsif tag_location == '' and normalized_tag contains 'city:' -%}
+    {%- assign tag_location = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+  {%- endif -%}
+
+  {%- if tag_type == '' and normalized_tag contains 'type:' -%}
+    {%- assign tag_type = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+  {%- elsif tag_type == '' and normalized_tag contains 'ghee:' -%}
+    {%- assign tag_type = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+  {%- endif -%}
+
+  {%- if tag_method == '' and normalized_tag contains 'method:' -%}
+    {%- assign tag_method = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- assign farmer_name = product.metafields.custom.farmer_name.value | default: product.vendor | default: product.title -%}
+{%- assign farmer_location = product.metafields.custom.farmer_location.value | default: product.metafields.custom.location.value | default: tag_location | default: section.settings.default_location -%}
+{%- assign ghee_type = product.metafields.custom.ghee_type.value | default: tag_type | default: product.type | default: section.settings.default_ghee_type -%}
+{%- assign production_method = product.metafields.custom.production_method.value | default: tag_method | default: section.settings.production_method_badge -%}
+{%- assign rating = product.metafields.custom.rating.value | default: section.settings.default_rating -%}
+{%- assign max_stock = current_variant.inventory_quantity | default: 0 -%}
+
+<section
+  class="ag-order-page ag-reveal ag-reveal--entry"
+  id="AnimallOrderFlow-{{ section.id }}"
+  data-ag-order-flow
+  data-unit-price="{{ current_variant.price }}"
+  data-max-stock="{{ max_stock }}"
+  data-stock-flexible-label="{{ section.settings.stock_flexible_label | escape }}"
+  data-verify-note-default="{{ section.settings.phone_verify_hint | escape }}"
+  data-verify-note-invalid-phone="{{ section.settings.invalid_phone_label | escape }}"
+  data-verify-note-verified="{{ section.settings.phone_verified_label | escape }}"
+  data-verify-note-require-verify="{{ section.settings.verify_required_label | escape }}"
+  data-verify-note-stock-exceeded="{{ section.settings.stock_exceeded_label | escape }}"
+  data-verify-note-order-failed="{{ section.settings.order_failed_label | escape }}"
+  data-verify-note-sold-out="{{ section.settings.sold_out_note_label | escape }}"
+  data-verify-button-label="{{ section.settings.verify_button_label | escape }}"
+  data-verified-button-label="{{ section.settings.verified_button_label | escape }}"
+  data-submit-ready-label="{{ section.settings.submit_ready_label | escape }}"
+  data-submit-loading-label="{{ section.settings.submit_loading_label | escape }}"
+  data-submit-sold-out-label="{{ section.settings.submit_sold_out_label | escape }}"
+  data-unit-label="{{ section.settings.unit_label | escape }}"
+  style="
+    --ag-bg: {{ section.settings.bg_color }};
+    --ag-surface: {{ section.settings.card_color }};
+    --ag-surface-strong: {{ section.settings.control_bg_color }};
+    --ag-border: {{ section.settings.border_color }};
+    --ag-border-strong: {{ section.settings.border_strong_color }};
+    --ag-text: {{ section.settings.text_color }};
+    --ag-text-soft: {{ section.settings.text_soft_color }};
+    --ag-primary: {{ section.settings.button_color }};
+    --ag-primary-hover: {{ section.settings.button_hover_color }};
+    --ag-primary-text: {{ section.settings.button_text_color }};
+    --ag-badge: {{ section.settings.badge_color }};
+    --ag-badge-text: {{ section.settings.badge_text_color }};
+    --ag-accent: {{ section.settings.accent_color }};
+  "
+>
+  <div class="ag-shell">
+    <header class="ag-order-header">
+      <a href="javascript:history.back()" class="ag-back-link" aria-label="{{ section.settings.back_link_aria_label }}">←</a>
+      <h1>{{ section.settings.order_heading }}</h1>
+    </header>
+
+    <div class="ag-order-product-card">
+      <div class="ag-order-product-main">
+        <div class="ag-card-media">
+          {%- if product.featured_image -%}
+            {{
+              product.featured_image
+              | image_url: width: 280, height: 280, crop: 'center'
+              | image_tag:
+                loading: 'lazy',
+                widths: '100,140,180,220,280',
+                sizes: '(max-width: 749px) 92px, 108px',
+                alt: farmer_name,
+                class: 'ag-card-image'
+            }}
+          {%- else -%}
+            <div class="ag-card-image ag-card-image--placeholder">{{ farmer_name | slice: 0 }}</div>
+          {%- endif -%}
+        </div>
+
+        <div class="ag-order-product-content">
+          <h2>{{ farmer_name }}</h2>
+          <p class="ag-card-location">{{ farmer_location }}</p>
+
+          <div class="ag-card-badges">
+            <span class="ag-chip ag-chip--primary">{{ ghee_type }}</span>
+            <span class="ag-chip">{{ production_method }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ag-order-product-side">
+        <p class="ag-order-product-price" data-ag-summary-price>{{ current_variant.price | money_without_trailing_zeros }}</p>
+        <p class="ag-order-product-unit">/{{ section.settings.unit_label }}</p>
+        <p class="ag-card-rating" aria-label="Rating {{ rating }}">★ {{ rating }}</p>
+      </div>
+    </div>
+
+    <form method="post" action="/cart/add" enctype="multipart/form-data" class="ag-order-form" data-ag-order-form>
+      <input type="hidden" name="id" value="{{ current_variant.id }}" data-ag-variant-id>
+      <input type="hidden" name="quantity" value="1" data-ag-quantity-input>
+      <input type="hidden" name="properties[Phone Verified]" value="No" data-ag-phone-verified-field>
+      <input type="hidden" name="properties[Source]" value="Animall Gopi MVP">
+
+      <section class="ag-panel">
+        <div class="ag-panel-heading">
+          <h3>{{ section.settings.quantity_heading }}</h3>
+          <p>{{ section.settings.max_stock_label_prefix }} <span data-ag-max-stock>{{ max_stock }}</span> {{ section.settings.stock_suffix_label }}</p>
+        </div>
+
+        <div class="ag-stepper" role="group" aria-label="Quantity selector">
+          <button class="ag-stepper-btn" type="button" data-ag-minus aria-label="{{ section.settings.decrease_qty_aria_label }}">−</button>
+          <div class="ag-stepper-value">
+            <strong data-ag-quantity-display>1</strong>
+            <span data-ag-unit-label>{{ section.settings.unit_label }}</span>
+          </div>
+          <button class="ag-stepper-btn" type="button" data-ag-plus aria-label="{{ section.settings.increase_qty_aria_label }}">+</button>
+        </div>
+      </section>
+
+      <section class="ag-panel">
+        <h3>{{ section.settings.customer_details_heading }}</h3>
+
+        <label class="ag-field">
+          <span>{{ section.settings.name_label }}</span>
+          <input type="text" name="properties[Customer Name]" autocomplete="name" placeholder="{{ section.settings.name_placeholder }}" required>
+        </label>
+
+        <label class="ag-field">
+          <span>{{ section.settings.phone_label }}</span>
+          <div class="ag-phone-row">
+            <input
+              type="tel"
+              name="properties[Phone Number]"
+              inputmode="numeric"
+              pattern="[0-9]{10}"
+              maxlength="10"
+              placeholder="{{ section.settings.phone_placeholder }}"
+              autocomplete="tel"
+              required
+              data-ag-phone-input
+            >
+            <button class="ag-verify-btn" type="button" data-ag-verify-btn>{{ section.settings.verify_button_label }}</button>
+          </div>
+        </label>
+
+        <p class="ag-verify-note" data-ag-verify-note>
+          {{ section.settings.phone_verify_hint }}
+        </p>
+
+        <label class="ag-field">
+          <span>{{ section.settings.address_1_label }}</span>
+          <input type="text" name="properties[Address Line 1]" autocomplete="address-line1" placeholder="{{ section.settings.address_1_placeholder }}" required>
+        </label>
+
+        <label class="ag-field">
+          <span>{{ section.settings.address_2_label }}</span>
+          <input type="text" name="properties[Address Line 2]" autocomplete="address-line2" placeholder="{{ section.settings.address_2_placeholder }}">
+        </label>
+
+        <div class="ag-grid ag-grid--two">
+          <label class="ag-field">
+            <span>{{ section.settings.city_label }}</span>
+            <input type="text" name="properties[City]" autocomplete="address-level2" required>
+          </label>
+          <label class="ag-field">
+            <span>{{ section.settings.state_label }}</span>
+            <input type="text" name="properties[State]" autocomplete="address-level1" required>
+          </label>
+        </div>
+
+        <label class="ag-field">
+          <span>{{ section.settings.pin_label }}</span>
+          <input type="text" name="properties[PIN]" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="{{ section.settings.pin_placeholder }}" required>
+        </label>
+      </section>
+
+      <section class="ag-panel ag-summary-panel">
+        <h3>{{ section.settings.order_summary_heading }}</h3>
+
+        <dl class="ag-summary-list">
+          <div>
+            <dt>{{ section.settings.price_per_kg_label }}</dt>
+            <dd data-ag-summary-price>{{ current_variant.price | money_without_trailing_zeros }}</dd>
+          </div>
+          <div>
+            <dt>{{ section.settings.quantity_label }}</dt>
+            <dd><span data-ag-summary-qty>1</span> <span data-ag-unit-label>{{ section.settings.unit_label }}</span></dd>
+          </div>
+          <div class="ag-summary-total">
+            <dt>{{ section.settings.total_label }}</dt>
+            <dd data-ag-summary-total>{{ current_variant.price | money_without_trailing_zeros }}</dd>
+          </div>
+        </dl>
+
+        <p class="ag-summary-note">{{ section.settings.delivery_note }}</p>
+      </section>
+
+      <button class="ag-submit-btn" type="submit" data-ag-submit-btn disabled>
+        {{ section.settings.verify_button_text }}
+      </button>
+    </form>
+  </div>
+
+  <script type="application/json" data-ag-variants-json>
+    {{ product.variants | json }}
+  </script>
+
+  <nav class="ag-bottom-nav" aria-label="Mobile navigation">
+    <a class="ag-bottom-nav-link" href="{{ section.settings.home_link | default: routes.root_url }}">
+      <span aria-hidden="true">⌂</span>
+      <span>{{ section.settings.home_label }}</span>
+    </a>
+    <a class="ag-bottom-nav-link is-active" href="{{ section.settings.orders_link | default: routes.account_url }}">
+      <span aria-hidden="true">☐</span>
+      <span>{{ section.settings.orders_label }}</span>
+    </a>
+    <a class="ag-bottom-nav-link" href="{{ section.settings.profile_link | default: routes.account_url }}">
+      <span aria-hidden="true">◌</span>
+      <span>{{ section.settings.profile_label }}</span>
+    </a>
+  </nav>
+</section>
+
+{% schema %}
+{
+  "name": "Animall Gopi Order Flow",
+  "templates": ["product"],
+  "settings": [
+    {
+      "type": "text",
+      "id": "order_heading",
+      "label": "Page heading",
+      "default": "Place Order / ऑर्डर करें"
+    },
+    {
+      "type": "text",
+      "id": "delivery_note",
+      "label": "Delivery note",
+      "default": "After payment, delivery will be managed via Shiprocket"
+    },
+    {
+      "type": "text",
+      "id": "verify_button_text",
+      "label": "Primary button default label",
+      "default": "Verify Phone to Continue"
+    },
+    {
+      "type": "text",
+      "id": "back_link_aria_label",
+      "label": "Back button accessibility label",
+      "default": "Go back"
+    },
+    {
+      "type": "text",
+      "id": "decrease_qty_aria_label",
+      "label": "Decrease quantity accessibility label",
+      "default": "Decrease quantity"
+    },
+    {
+      "type": "text",
+      "id": "increase_qty_aria_label",
+      "label": "Increase quantity accessibility label",
+      "default": "Increase quantity"
+    },
+    {
+      "type": "text",
+      "id": "quantity_heading",
+      "label": "Quantity section heading",
+      "default": "मात्रा (Quantity)"
+    },
+    {
+      "type": "text",
+      "id": "max_stock_label_prefix",
+      "label": "Max stock prefix",
+      "default": "Max:"
+    },
+    {
+      "type": "text",
+      "id": "stock_suffix_label",
+      "label": "Stock suffix label",
+      "default": "kg available"
+    },
+    {
+      "type": "text",
+      "id": "unit_label",
+      "label": "Unit label",
+      "default": "kg"
+    },
+    {
+      "type": "text",
+      "id": "customer_details_heading",
+      "label": "Customer details heading",
+      "default": "आपकी जानकारी (Your Details)"
+    },
+    {
+      "type": "text",
+      "id": "order_summary_heading",
+      "label": "Order summary heading",
+      "default": "ऑर्डर सारांश (Order Summary)"
+    },
+    {
+      "type": "text",
+      "id": "price_per_kg_label",
+      "label": "Price per kg label",
+      "default": "Price per kg"
+    },
+    {
+      "type": "text",
+      "id": "quantity_label",
+      "label": "Quantity label",
+      "default": "Quantity"
+    },
+    {
+      "type": "text",
+      "id": "total_label",
+      "label": "Total label",
+      "default": "Total"
+    },
+    {
+      "type": "text",
+      "id": "name_label",
+      "label": "Name field label",
+      "default": "Your Name / आपका नाम"
+    },
+    {
+      "type": "text",
+      "id": "name_placeholder",
+      "label": "Name placeholder",
+      "default": "Enter your name"
+    },
+    {
+      "type": "text",
+      "id": "phone_label",
+      "label": "Phone field label",
+      "default": "Phone Number / फोन नंबर"
+    },
+    {
+      "type": "text",
+      "id": "phone_placeholder",
+      "label": "Phone placeholder",
+      "default": "10-digit phone number"
+    },
+    {
+      "type": "text",
+      "id": "address_1_label",
+      "label": "Address line 1 label",
+      "default": "Address Line 1"
+    },
+    {
+      "type": "text",
+      "id": "address_1_placeholder",
+      "label": "Address line 1 placeholder",
+      "default": "House / Street"
+    },
+    {
+      "type": "text",
+      "id": "address_2_label",
+      "label": "Address line 2 label",
+      "default": "Address Line 2 (Optional)"
+    },
+    {
+      "type": "text",
+      "id": "address_2_placeholder",
+      "label": "Address line 2 placeholder",
+      "default": "Area / Landmark"
+    },
+    {
+      "type": "text",
+      "id": "city_label",
+      "label": "City label",
+      "default": "City"
+    },
+    {
+      "type": "text",
+      "id": "state_label",
+      "label": "State label",
+      "default": "State"
+    },
+    {
+      "type": "text",
+      "id": "pin_label",
+      "label": "PIN label",
+      "default": "PIN Code"
+    },
+    {
+      "type": "text",
+      "id": "pin_placeholder",
+      "label": "PIN placeholder",
+      "default": "6-digit PIN"
+    },
+    {
+      "type": "text",
+      "id": "verify_button_label",
+      "label": "Verify button label",
+      "default": "Verify"
+    },
+    {
+      "type": "text",
+      "id": "verified_button_label",
+      "label": "Verified button label",
+      "default": "Verified"
+    },
+    {
+      "type": "text",
+      "id": "stock_flexible_label",
+      "label": "Stock label for untracked inventory",
+      "default": "25+"
+    },
+    {
+      "type": "text",
+      "id": "phone_verify_hint",
+      "label": "Phone verification hint",
+      "default": "Verify your phone number to continue."
+    },
+    {
+      "type": "text",
+      "id": "invalid_phone_label",
+      "label": "Invalid phone message",
+      "default": "Enter a valid 10-digit phone number."
+    },
+    {
+      "type": "text",
+      "id": "phone_verified_label",
+      "label": "Phone verified message",
+      "default": "Phone verified. You can place your order now."
+    },
+    {
+      "type": "text",
+      "id": "verify_required_label",
+      "label": "Verify required message",
+      "default": "Please verify your phone number before placing the order."
+    },
+    {
+      "type": "text",
+      "id": "stock_exceeded_label",
+      "label": "Stock exceeded message",
+      "default": "Quantity exceeds available stock."
+    },
+    {
+      "type": "text",
+      "id": "order_failed_label",
+      "label": "Order failed message",
+      "default": "Could not place the order. Please try again."
+    },
+    {
+      "type": "text",
+      "id": "sold_out_note_label",
+      "label": "Sold out note message",
+      "default": "This listing is currently out of stock."
+    },
+    {
+      "type": "text",
+      "id": "submit_ready_label",
+      "label": "Submit ready label",
+      "default": "Place Order & Pay"
+    },
+    {
+      "type": "text",
+      "id": "submit_loading_label",
+      "label": "Submit loading label",
+      "default": "Adding to cart..."
+    },
+    {
+      "type": "text",
+      "id": "submit_sold_out_label",
+      "label": "Submit sold out label",
+      "default": "Sold Out"
+    },
+    {
+      "type": "text",
+      "id": "default_location",
+      "label": "Fallback location",
+      "default": "Gujarat"
+    },
+    {
+      "type": "text",
+      "id": "default_ghee_type",
+      "label": "Fallback ghee type",
+      "default": "A2 Cow Ghee"
+    },
+    {
+      "type": "text",
+      "id": "production_method_badge",
+      "label": "Production method badge",
+      "default": "Bilona"
+    },
+    {
+      "type": "text",
+      "id": "default_rating",
+      "label": "Fallback rating",
+      "default": "4.8"
+    },
+    {
+      "type": "header",
+      "content": "Theme Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#f5f3eb"
+    },
+    {
+      "type": "color",
+      "id": "card_color",
+      "label": "Card color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "control_bg_color",
+      "label": "Input background color",
+      "default": "#f5f2e6"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e4decc"
+    },
+    {
+      "type": "color",
+      "id": "border_strong_color",
+      "label": "Strong border color",
+      "default": "#d5cda9"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Primary text color",
+      "default": "#23211b"
+    },
+    {
+      "type": "color",
+      "id": "text_soft_color",
+      "label": "Secondary text color",
+      "default": "#666153"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button color",
+      "default": "#202127"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_color",
+      "label": "Button hover color",
+      "default": "#2d2f36"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Badge background color",
+      "default": "#f1ebbe"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#4f4728"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#d89f33"
+    },
+    {
+      "type": "url",
+      "id": "home_link",
+      "label": "Bottom nav Home link"
+    },
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Bottom nav Home text",
+      "default": "Home"
+    },
+    {
+      "type": "url",
+      "id": "orders_link",
+      "label": "Bottom nav Orders link"
+    },
+    {
+      "type": "text",
+      "id": "orders_label",
+      "label": "Bottom nav Orders text",
+      "default": "Orders"
+    },
+    {
+      "type": "url",
+      "id": "profile_link",
+      "label": "Bottom nav Profile link"
+    },
+    {
+      "type": "text",
+      "id": "profile_label",
+      "label": "Bottom nav Profile text",
+      "default": "Profile"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Animall Gopi Order Flow"
+    }
+  ]
+}
+{% endschema %}

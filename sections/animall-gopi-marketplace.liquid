@@ -1,0 +1,449 @@
+{{ 'animall-gopi.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'animall-gopi.js' | asset_url }}" defer="defer"></script>
+
+{%- assign source_collection = collections[section.settings.collection] -%}
+{%- assign total_products = 0 -%}
+{%- if source_collection != blank -%}
+  {%- assign total_products = source_collection.products_count -%}
+{%- endif -%}
+
+<section
+  class="ag-marketplace ag-reveal ag-reveal--entry"
+  id="AnimallMarketplace-{{ section.id }}"
+  data-ag-marketplace
+  data-all-types-label="{{ section.settings.all_types_label | escape }}"
+  data-no-results-label="{{ section.settings.no_results_label | escape }}"
+  style="
+    --ag-bg: {{ section.settings.bg_color }};
+    --ag-surface: {{ section.settings.card_color }};
+    --ag-surface-strong: {{ section.settings.control_bg_color }};
+    --ag-border: {{ section.settings.border_color }};
+    --ag-border-strong: {{ section.settings.border_strong_color }};
+    --ag-text: {{ section.settings.text_color }};
+    --ag-text-soft: {{ section.settings.text_soft_color }};
+    --ag-primary: {{ section.settings.button_color }};
+    --ag-primary-hover: {{ section.settings.button_hover_color }};
+    --ag-primary-text: {{ section.settings.button_text_color }};
+    --ag-badge: {{ section.settings.badge_color }};
+    --ag-badge-text: {{ section.settings.badge_text_color }};
+    --ag-accent: {{ section.settings.accent_color }};
+  "
+>
+  <div class="ag-shell">
+    <header class="ag-marketplace-header">
+      <h1>{{ section.settings.heading }}</h1>
+      <span class="ag-wireframe-pill">{{ section.settings.wireframe_label }}</span>
+    </header>
+
+    <div class="ag-controls">
+      <label class="ag-control ag-control--select">
+        <span class="ag-control-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2a7.5 7.5 0 0 0-7.5 7.5c0 4.3 5.4 11.6 6 12.3a1.87 1.87 0 0 0 3 0c.6-.7 6-8 6-12.3A7.5 7.5 0 0 0 12 2Zm0 9.8a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6Z"/></svg>
+        </span>
+        <select data-ag-location-filter aria-label="Filter by location">
+          <option value="all">{{ section.settings.location_all_label }}</option>
+        </select>
+        <span class="ag-control-chevron" aria-hidden="true">⌄</span>
+      </label>
+
+      <div class="ag-control-row">
+        <label class="ag-control ag-control--search">
+          <span class="ag-control-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M10.9 3a7.9 7.9 0 1 0 4.9 14l4.4 4.3a1 1 0 1 0 1.4-1.4l-4.3-4.4A7.9 7.9 0 0 0 10.9 3Zm0 2a5.9 5.9 0 1 1 0 11.8 5.9 5.9 0 0 1 0-11.8Z"/></svg>
+          </span>
+          <input type="search" placeholder="{{ section.settings.search_placeholder }}" data-ag-search />
+        </label>
+
+        <button type="button" class="ag-filter-button" aria-expanded="false" data-ag-toggle-filters>
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6l-5.8 7.8V19a1 1 0 0 1-.5.87l-3 1.7A1 1 0 0 1 10 20.7v-7.3L3.2 5.6A1 1 0 0 1 3 5Z"/></svg>
+          <span class="visually-hidden">{{ section.settings.toggle_filters_sr_label }}</span>
+        </button>
+      </div>
+
+      <div class="ag-filter-panel" hidden data-ag-filter-panel>
+        <p>{{ section.settings.filter_title }}</p>
+        <div class="ag-filter-chips" data-ag-type-filters></div>
+      </div>
+    </div>
+
+    <p class="ag-results"><span data-ag-visible-count>{{ total_products }}</span> {{ section.settings.listings_found_label }}</p>
+
+    <div class="ag-listings" data-ag-listings>
+      {%- if source_collection != blank and source_collection.products_count > 0 -%}
+        {%- for product in source_collection.products -%}
+          {%- assign featured_variant = product.selected_or_first_available_variant -%}
+          {%- assign tag_location = '' -%}
+          {%- assign tag_type = '' -%}
+          {%- assign tag_method = '' -%}
+
+          {%- for tag in product.tags -%}
+            {%- assign normalized_tag = tag | downcase -%}
+
+            {%- if tag_location == '' and normalized_tag contains 'location:' -%}
+              {%- assign tag_location = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+            {%- elsif tag_location == '' and normalized_tag contains 'city:' -%}
+              {%- assign tag_location = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+            {%- endif -%}
+
+            {%- if tag_type == '' and normalized_tag contains 'type:' -%}
+              {%- assign tag_type = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+            {%- elsif tag_type == '' and normalized_tag contains 'ghee:' -%}
+              {%- assign tag_type = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+            {%- endif -%}
+
+            {%- if tag_method == '' and normalized_tag contains 'method:' -%}
+              {%- assign tag_method = tag | split: ':' | last | strip | replace: '_', ' ' | replace: '-', ' ' -%}
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- assign farmer_name = product.metafields.custom.farmer_name.value | default: product.vendor | default: product.title -%}
+          {%- assign farmer_location = product.metafields.custom.farmer_location.value | default: product.metafields.custom.location.value | default: tag_location | default: section.settings.default_location -%}
+          {%- assign ghee_type = product.metafields.custom.ghee_type.value | default: tag_type | default: product.type | default: section.settings.default_ghee_type -%}
+          {%- assign production_method = product.metafields.custom.production_method.value | default: tag_method | default: section.settings.production_method_badge -%}
+          {%- assign rating = product.metafields.custom.rating.value | default: section.settings.default_rating -%}
+          {%- assign inventory_quantity = featured_variant.inventory_quantity | default: 0 -%}
+          {%- assign stock_text = inventory_quantity | append: ' ' | append: section.settings.stock_suffix_label -%}
+          {%- assign out_of_stock = false -%}
+
+          {%- if featured_variant.inventory_management == blank -%}
+            {%- assign stock_text = section.settings.stock_untracked_label -%}
+          {%- elsif inventory_quantity < 1 -%}
+            {%- assign out_of_stock = true -%}
+          {%- endif -%}
+
+          {%- capture search_blob -%}
+            {{ farmer_name }} {{ farmer_location }} {{ ghee_type }} {{ product.title }}
+          {%- endcapture -%}
+
+          <article
+            class="ag-card ag-reveal"
+            data-ag-card
+            data-location="{{ farmer_location | strip | handleize }}"
+            data-location-label="{{ farmer_location | strip | escape }}"
+            data-type="{{ ghee_type | strip | handleize }}"
+            data-type-label="{{ ghee_type | strip | escape }}"
+            data-search="{{ search_blob | strip | downcase | escape_once }}"
+            data-stock="{{ inventory_quantity }}"
+          >
+            <div class="ag-card-main">
+              <div class="ag-card-media">
+                {%- if product.featured_image -%}
+                  {{
+                    product.featured_image
+                    | image_url: width: 280, height: 280, crop: 'center'
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '100,140,180,220,280',
+                      sizes: '(max-width: 749px) 92px, 108px',
+                      alt: farmer_name,
+                      class: 'ag-card-image'
+                  }}
+                {%- else -%}
+                  <div class="ag-card-image ag-card-image--placeholder">{{ farmer_name | slice: 0 }}</div>
+                {%- endif -%}
+              </div>
+
+              <div class="ag-card-content">
+                <h2>{{ farmer_name }}</h2>
+                <p class="ag-card-location">{{ farmer_location }}</p>
+
+                <div class="ag-card-badges">
+                  <span class="ag-chip ag-chip--primary">{{ ghee_type }}</span>
+                  <span class="ag-chip">{{ production_method }}</span>
+                </div>
+
+                <p class="ag-card-price">{{ featured_variant.price | money_without_trailing_zeros }}<span>/kg</span></p>
+
+                <p class="ag-card-stock{% if out_of_stock %} ag-card-stock--out{% endif %}">
+                  {% if out_of_stock %}
+                    {{ section.settings.out_of_stock_label }}
+                  {% else %}
+                    {{ stock_text }}
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+
+            <div class="ag-card-side">
+              <p class="ag-card-rating" aria-label="Rating {{ rating }}">★ {{ rating }}</p>
+
+              {% if out_of_stock %}
+                <button class="ag-button ag-button--disabled" type="button" disabled>
+                  {{ section.settings.sold_out_button_label }}
+                </button>
+              {% else %}
+                <a class="ag-button" href="{{ product.url }}?variant={{ featured_variant.id }}">
+                  {{ section.settings.place_order_button_label }}
+                </a>
+              {% endif %}
+            </div>
+          </article>
+        {%- endfor -%}
+      {%- else -%}
+        <p class="ag-empty-state">{{ section.settings.empty_collection_label }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <nav class="ag-bottom-nav" aria-label="Mobile navigation">
+    <a class="ag-bottom-nav-link is-active" href="{{ section.settings.home_link | default: routes.root_url }}">
+      <span aria-hidden="true">⌂</span>
+      <span>{{ section.settings.home_label }}</span>
+    </a>
+    <a class="ag-bottom-nav-link" href="{{ section.settings.orders_link | default: routes.account_url }}">
+      <span aria-hidden="true">☐</span>
+      <span>{{ section.settings.orders_label }}</span>
+    </a>
+    <a class="ag-bottom-nav-link" href="{{ section.settings.profile_link | default: routes.account_url }}">
+      <span aria-hidden="true">◌</span>
+      <span>{{ section.settings.profile_label }}</span>
+    </a>
+  </nav>
+</section>
+
+{% schema %}
+{
+  "name": "Animall Gopi Marketplace",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Products collection"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Animall गोपी"
+    },
+    {
+      "type": "text",
+      "id": "wireframe_label",
+      "label": "Top-right label",
+      "default": "Wireframe"
+    },
+    {
+      "type": "text",
+      "id": "location_all_label",
+      "label": "All locations label",
+      "default": "All Locations"
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search placeholder",
+      "default": "Search farmers, ghee type..."
+    },
+    {
+      "type": "text",
+      "id": "toggle_filters_sr_label",
+      "label": "Toggle filters accessibility label",
+      "default": "Toggle filters"
+    },
+    {
+      "type": "text",
+      "id": "filter_title",
+      "label": "Filter title",
+      "default": "Filter by ghee type"
+    },
+    {
+      "type": "text",
+      "id": "default_location",
+      "label": "Fallback location",
+      "default": "Gujarat"
+    },
+    {
+      "type": "text",
+      "id": "default_ghee_type",
+      "label": "Fallback ghee type",
+      "default": "A2 Cow Ghee"
+    },
+    {
+      "type": "text",
+      "id": "production_method_badge",
+      "label": "Production method badge",
+      "default": "Bilona"
+    },
+    {
+      "type": "text",
+      "id": "default_rating",
+      "label": "Fallback rating",
+      "default": "4.8"
+    },
+    {
+      "type": "text",
+      "id": "stock_untracked_label",
+      "label": "Stock label for untracked inventory",
+      "default": "Available on request"
+    },
+    {
+      "type": "text",
+      "id": "stock_suffix_label",
+      "label": "Stock suffix label",
+      "default": "kg available"
+    },
+    {
+      "type": "text",
+      "id": "listings_found_label",
+      "label": "Results suffix label",
+      "default": "listings found"
+    },
+    {
+      "type": "text",
+      "id": "all_types_label",
+      "label": "All types filter label",
+      "default": "All types"
+    },
+    {
+      "type": "text",
+      "id": "no_results_label",
+      "label": "No results label",
+      "default": "No listings match your filters."
+    },
+    {
+      "type": "text",
+      "id": "empty_collection_label",
+      "label": "Empty collection label",
+      "default": "Add products to the selected collection to show listings."
+    },
+    {
+      "type": "text",
+      "id": "place_order_button_label",
+      "label": "Place order button label",
+      "default": "Place Order"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_button_label",
+      "label": "Sold out button label",
+      "default": "Sold Out"
+    },
+    {
+      "type": "text",
+      "id": "out_of_stock_label",
+      "label": "Out of stock line label",
+      "default": "Sold out"
+    },
+    {
+      "type": "header",
+      "content": "Theme Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#f5f3eb"
+    },
+    {
+      "type": "color",
+      "id": "card_color",
+      "label": "Card color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "control_bg_color",
+      "label": "Input background color",
+      "default": "#f5f2e6"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e4decc"
+    },
+    {
+      "type": "color",
+      "id": "border_strong_color",
+      "label": "Strong border color",
+      "default": "#d5cda9"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Primary text color",
+      "default": "#23211b"
+    },
+    {
+      "type": "color",
+      "id": "text_soft_color",
+      "label": "Secondary text color",
+      "default": "#666153"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button color",
+      "default": "#202127"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_color",
+      "label": "Button hover color",
+      "default": "#2d2f36"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Badge background color",
+      "default": "#f1ebbe"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#4f4728"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#d89f33"
+    },
+    {
+      "type": "url",
+      "id": "home_link",
+      "label": "Bottom nav Home link"
+    },
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Bottom nav Home text",
+      "default": "Home"
+    },
+    {
+      "type": "url",
+      "id": "orders_link",
+      "label": "Bottom nav Orders link"
+    },
+    {
+      "type": "text",
+      "id": "orders_label",
+      "label": "Bottom nav Orders text",
+      "default": "Orders"
+    },
+    {
+      "type": "url",
+      "id": "profile_link",
+      "label": "Bottom nav Profile link"
+    },
+    {
+      "type": "text",
+      "id": "profile_label",
+      "label": "Bottom nav Profile text",
+      "default": "Profile"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Animall Gopi Marketplace"
+    }
+  ]
+}
+{% endschema %}
