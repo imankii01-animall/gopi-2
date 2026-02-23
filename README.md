@@ -61,3 +61,4 @@ Optional metafields (`custom` namespace):
 
 Phone verification in this theme is a client-side verification gate (10-digit validation + verify action). For real OTP delivery, connect a dedicated OTP app/service in a later phase.
 # gopi-2
+# gopi-2
