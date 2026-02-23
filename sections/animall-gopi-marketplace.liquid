@@ -194,10 +194,12 @@
       <span aria-hidden="true">☐</span>
       <span>{{ section.settings.orders_label }}</span>
     </a>
-    <a class="ag-bottom-nav-link" href="{{ section.settings.profile_link | default: routes.account_url }}">
-      <span aria-hidden="true">◌</span>
-      <span>{{ section.settings.profile_label }}</span>
-    </a>
+    {%- if section.settings.emergent_badge_label != blank -%}
+      {%- assign badge_link = section.settings.emergent_badge_link | default: routes.root_url -%}
+      <a class="ag-bottom-nav-badge" href="{{ badge_link }}">
+        {{ section.settings.emergent_badge_label }}
+      </a>
+    {%- endif -%}
   </nav>
 </section>
 
@@ -438,6 +440,17 @@
       "id": "profile_label",
       "label": "Bottom nav Profile text",
       "default": "Profile"
+    },
+    {
+      "type": "url",
+      "id": "emergent_badge_link",
+      "label": "Bottom badge link"
+    },
+    {
+      "type": "text",
+      "id": "emergent_badge_label",
+      "label": "Bottom badge text",
+      "default": "Made with Emergent"
     }
   ],
   "presets": [

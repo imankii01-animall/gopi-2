@@ -1,8 +1,26 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
       "type": "animall-gopi-order-flow",
-      "settings": {}
+      "settings": {
+        "commission_percent": 10,
+        "order_heading": "Place Order / ऑर्डर करें",
+        "verify_not_required_label": "Place order directly after filling details.",
+        "submit_ready_label": "Place Order & Pay",
+        "show_story_sections": false,
+        "whatsapp_heading": "Quality queries on WhatsApp",
+        "whatsapp_cta_label": "Chat on WhatsApp",
+        "emergent_badge_label": "Made with Emergent"
+      }
     }
   },
   "order": [

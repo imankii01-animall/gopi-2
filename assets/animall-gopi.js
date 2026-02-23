@@ -193,44 +193,52 @@
     var summaryQuantity = root.querySelector("[data-ag-summary-qty]");
     var summaryTotal = root.querySelector("[data-ag-summary-total]");
     var summaryPriceEls = root.querySelectorAll("[data-ag-summary-price]");
+    var summaryCommission = root.querySelector("[data-ag-summary-commission]");
+    var summaryNetPayable = root.querySelector("[data-ag-summary-net-payable]");
+    var summaryCommissionRate = root.querySelector("[data-ag-commission-rate-label]");
     var unitLabelEls = root.querySelectorAll("[data-ag-unit-label]");
     var maxStockEl = root.querySelector("[data-ag-max-stock]");
-    var verifyButton = root.querySelector("[data-ag-verify-btn]");
     var verifyNote = root.querySelector("[data-ag-verify-note]");
     var phoneInput = root.querySelector("[data-ag-phone-input]");
-    var phoneVerifiedInput = root.querySelector("[data-ag-phone-verified-field]");
     var submitButton = root.querySelector("[data-ag-submit-btn]");
     var variantIdInput = root.querySelector("[data-ag-variant-id]");
+    var orderTotalPropertyInput = root.querySelector("[data-ag-order-total-property]");
+    var commissionPropertyInput = root.querySelector("[data-ag-commission-property]");
+    var netPayablePropertyInput = root.querySelector("[data-ag-net-payable-property]");
+    var commissionRatePropertyInput = root.querySelector(
+      "[data-ag-commission-rate-property]"
+    );
     var variantsJsonNode = root.querySelector("[data-ag-variants-json]");
+
     var labels = {
       stockFlexible: root.dataset.stockFlexibleLabel || "25+",
-      verifyDefault:
-        root.dataset.verifyNoteDefault || "Verify your phone number to continue.",
-      verifyInvalidPhone:
-        root.dataset.verifyNoteInvalidPhone ||
-        "Enter a valid 10-digit phone number.",
-      verifySuccess:
-        root.dataset.verifyNoteVerified ||
-        "Phone verified. You can place your order now.",
-      verifyRequired:
-        root.dataset.verifyNoteRequireVerify ||
-        "Please verify your phone number before placing the order.",
+      verifyNotRequired:
+        root.dataset.verifyNoteNotRequired ||
+        "Phone verification is disabled. You can place order directly.",
       stockExceeded:
         root.dataset.verifyNoteStockExceeded ||
         "Quantity exceeds available stock.",
       orderFailed:
         root.dataset.verifyNoteOrderFailed ||
         "Could not place the order. Please try again.",
+      stockRefreshFailed:
+        root.dataset.verifyNoteStockRefreshFailed ||
+        "Could not refresh live stock. Proceeding with current stock value.",
       soldOutNote:
         root.dataset.verifyNoteSoldOut ||
         "This listing is currently out of stock.",
-      verifyButton: root.dataset.verifyButtonLabel || "Verify",
-      verifiedButton: root.dataset.verifiedButtonLabel || "Verified",
       submitReady: root.dataset.submitReadyLabel || "Place Order & Pay",
       submitLoading: root.dataset.submitLoadingLabel || "Adding to cart...",
       submitSoldOut: root.dataset.submitSoldOutLabel || "Sold Out",
       unit: root.dataset.unitLabel || "kg"
     };
+
+    var commissionRatePercent = Number(root.dataset.commissionRate || 10);
+    if (isNaN(commissionRatePercent) || commissionRatePercent < 0) {
+      commissionRatePercent = 10;
+    }
+    commissionRatePercent = Math.min(commissionRatePercent, 100);
+    var commissionRate = commissionRatePercent / 100;
 
     var variants = [];
     try {
@@ -240,10 +248,14 @@
     }
 
     var selectedVariant = pickVariant(variants);
-    var unitPriceCents = selectedVariant ? Number(selectedVariant.price || 0) : Number(root.dataset.unitPrice || 0);
+    var unitPriceCents = selectedVariant
+      ? Number(selectedVariant.price || 0)
+      : Number(root.dataset.unitPrice || 0);
     var trackedStock = selectedVariant ? selectedVariant.inventory_management : null;
     var isStockTracked = Boolean(trackedStock);
-    var maxStock = selectedVariant ? Number(selectedVariant.inventory_quantity || 0) : Number(root.dataset.maxStock || 0);
+    var maxStock = selectedVariant
+      ? Number(selectedVariant.inventory_quantity || 0)
+      : Number(root.dataset.maxStock || 0);
 
     if (!isStockTracked) {
       maxStock = 25;
@@ -254,16 +266,51 @@
     }
 
     var quantity = maxStock > 0 ? 1 : 0;
-    var phoneVerified = false;
-    var defaultSubmitText = submitButton ? submitButton.textContent.trim() : "Verify Phone to Continue";
-    var readySubmitText = labels.submitReady || "Place Order & Pay";
+    var isSubmitting = false;
 
-    if (verifyButton) {
-      verifyButton.textContent = labels.verifyButton;
-    }
+    var defaultSubmitText = submitButton
+      ? submitButton.textContent.trim()
+      : "Verify Phone to Continue";
 
     if (selectedVariant && variantIdInput) {
       variantIdInput.value = String(selectedVariant.id);
+    }
+
+    function setVerifyMessage(message, status) {
+      if (!verifyNote) {
+        return;
+      }
+
+      verifyNote.textContent = message;
+      verifyNote.classList.remove("is-error", "is-verified");
+
+      if (status === "error") {
+        verifyNote.classList.add("is-error");
+      } else if (status === "verified") {
+        verifyNote.classList.add("is-verified");
+      }
+    }
+
+    function updateSubmitState() {
+      if (!submitButton) {
+        return;
+      }
+
+      if (isSubmitting) {
+        submitButton.disabled = true;
+        submitButton.textContent = labels.submitLoading;
+        return;
+      }
+
+      if (maxStock < 1) {
+        submitButton.disabled = true;
+        submitButton.textContent = labels.submitSoldOut;
+        return;
+      }
+
+      var canSubmit = quantity > 0;
+      submitButton.disabled = !canSubmit;
+      submitButton.textContent = canSubmit ? labels.submitReady : defaultSubmitText;
     }
 
     function updateSummary() {
@@ -287,8 +334,13 @@
         maxStockEl.textContent = isStockTracked ? String(maxStock) : labels.stockFlexible;
       }
 
+      var totalCents = unitPriceCents * quantity;
+      var commissionCents = Math.round(totalCents * commissionRate);
+      var netPayableCents = Math.max(totalCents - commissionCents, 0);
       var formattedPrice = formatMoney(unitPriceCents);
-      var formattedTotal = formatMoney(unitPriceCents * quantity);
+      var formattedTotal = formatMoney(totalCents);
+      var formattedCommission = formatMoney(commissionCents);
+      var formattedNetPayable = formatMoney(netPayableCents);
 
       Array.prototype.forEach.call(summaryPriceEls, function (priceEl) {
         priceEl.textContent = formattedPrice;
@@ -296,6 +348,34 @@
 
       if (summaryTotal) {
         summaryTotal.textContent = formattedTotal;
+      }
+
+      if (summaryCommission) {
+        summaryCommission.textContent = formattedCommission;
+      }
+
+      if (summaryNetPayable) {
+        summaryNetPayable.textContent = formattedNetPayable;
+      }
+
+      if (summaryCommissionRate) {
+        summaryCommissionRate.textContent = "(" + formatPercent(commissionRatePercent) + "%)";
+      }
+
+      if (orderTotalPropertyInput) {
+        orderTotalPropertyInput.value = formattedTotal;
+      }
+
+      if (commissionPropertyInput) {
+        commissionPropertyInput.value = formattedCommission;
+      }
+
+      if (netPayablePropertyInput) {
+        netPayablePropertyInput.value = formattedNetPayable;
+      }
+
+      if (commissionRatePropertyInput) {
+        commissionRatePropertyInput.value = formatPercent(commissionRatePercent) + "%";
       }
 
       if (plusButton) {
@@ -309,34 +389,43 @@
       updateSubmitState();
     }
 
-    function updateSubmitState() {
-      if (!submitButton) {
-        return;
-      }
-
-      var hasStock = maxStock > 0;
-      var canSubmit = hasStock && phoneVerified;
-
-      submitButton.disabled = !canSubmit;
-      submitButton.textContent = canSubmit ? readySubmitText : defaultSubmitText;
+    function resetVerification() {
+      setVerifyMessage(labels.verifyNotRequired);
+      updateSubmitState();
     }
 
-    function resetVerification() {
-      phoneVerified = false;
-      if (phoneVerifiedInput) {
-        phoneVerifiedInput.value = "No";
+    function refreshTrackedStock() {
+      if (!isStockTracked || !selectedVariant || !root.dataset.productHandle) {
+        return Promise.resolve();
       }
 
-      if (verifyNote) {
-        verifyNote.textContent = labels.verifyDefault;
-        verifyNote.classList.remove("is-verified", "is-error");
-      }
+      var url = "/products/" + encodeURIComponent(root.dataset.productHandle) + ".js";
+      return fetch(url, {
+        headers: {
+          Accept: "application/json"
+        }
+      })
+        .then(parseJsonResponse)
+        .then(function (productPayload) {
+          var variantsList = (productPayload && productPayload.variants) || [];
+          var latestVariant = variantsList.find(function (variant) {
+            return String(variant.id) === String(selectedVariant.id);
+          });
 
-      if (verifyButton) {
-        verifyButton.textContent = labels.verifyButton;
-      }
+          if (!latestVariant) {
+            return;
+          }
 
-      updateSubmitState();
+          maxStock = Math.max(Number(latestVariant.inventory_quantity || 0), 0);
+          if (quantity > maxStock) {
+            quantity = maxStock;
+          }
+
+          updateSummary();
+        })
+        .catch(function () {
+          setVerifyMessage(labels.stockRefreshFailed, "error");
+        });
     }
 
     if (plusButton) {
@@ -363,113 +452,65 @@
 
     if (phoneInput) {
       phoneInput.addEventListener("input", function () {
-        phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
-        resetVerification();
-      });
-    }
-
-    if (verifyButton) {
-      verifyButton.addEventListener("click", function () {
-        var phoneValue = phoneInput ? phoneInput.value.trim() : "";
-        var validPhone = /^[0-9]{10}$/.test(phoneValue);
-
-        if (!validPhone) {
-          if (verifyNote) {
-            verifyNote.textContent = labels.verifyInvalidPhone;
-            verifyNote.classList.add("is-error");
-            verifyNote.classList.remove("is-verified");
-          }
-          return;
-        }
-
-        phoneVerified = true;
-
-        if (phoneVerifiedInput) {
-          phoneVerifiedInput.value = "Yes";
-        }
-
-        if (verifyButton) {
-          verifyButton.textContent = labels.verifiedButton;
-        }
-
-        if (verifyNote) {
-          verifyNote.textContent = labels.verifySuccess;
-          verifyNote.classList.remove("is-error");
-          verifyNote.classList.add("is-verified");
-        }
-
-        updateSubmitState();
+        var sanitized = sanitizeDigits(phoneInput.value).slice(0, 10);
+        phoneInput.value = sanitized;
       });
     }
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
 
-      if (!phoneVerified) {
-        if (verifyNote) {
-          verifyNote.textContent = labels.verifyRequired;
-          verifyNote.classList.add("is-error");
-          verifyNote.classList.remove("is-verified");
-        }
+      if (isSubmitting) {
         return;
       }
 
-      if (quantity > maxStock) {
-        if (verifyNote) {
-          verifyNote.textContent = labels.stockExceeded;
-          verifyNote.classList.add("is-error");
-          verifyNote.classList.remove("is-verified");
-        }
+      if (quantity < 1 || quantity > maxStock) {
+        setVerifyMessage(labels.stockExceeded, "error");
         return;
       }
 
-      var formData = new FormData(form);
+      isSubmitting = true;
+      updateSubmitState();
 
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = labels.submitLoading;
-      }
-
-      fetch("/cart/add.js", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json"
-        }
-      })
-        .then(function (response) {
-          if (!response.ok) {
-            throw new Error("Failed to add item to cart");
+      refreshTrackedStock()
+        .then(function () {
+          if (quantity < 1 || quantity > maxStock) {
+            var stockError = new Error(labels.stockExceeded);
+            stockError.code = "stock";
+            throw stockError;
           }
-          return response.json();
+
+          var formData = new FormData(form);
+          return fetch("/cart/add.js", {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json"
+            }
+          }).then(parseJsonResponse);
         })
         .then(function () {
           window.location.href = "/checkout";
         })
-        .catch(function () {
-          if (verifyNote) {
-            verifyNote.textContent = labels.orderFailed;
-            verifyNote.classList.add("is-error");
-            verifyNote.classList.remove("is-verified");
+        .catch(function (error) {
+          if (error && error.code === "stock") {
+            setVerifyMessage(labels.stockExceeded, "error");
+          } else {
+            setVerifyMessage((error && error.message) || labels.orderFailed, "error");
           }
 
+          isSubmitting = false;
           updateSubmitState();
         });
     });
 
-    if (maxStock === 0) {
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = labels.submitSoldOut;
-      }
-
-      if (verifyNote) {
-        verifyNote.textContent = labels.soldOutNote;
-        verifyNote.classList.add("is-error");
-      }
-    }
-
+    resetVerification();
     updateSummary();
+
+    if (maxStock === 0) {
+      setVerifyMessage(labels.soldOutNote, "error");
+      updateSubmitState();
+    }
   }
 
   function pickVariant(variants) {
@@ -495,6 +536,47 @@
     });
 
     return availableVariant || variants[0];
+  }
+
+  function parseJsonResponse(response) {
+    return response.text().then(function (bodyText) {
+      var payload = {};
+      if (bodyText) {
+        try {
+          payload = JSON.parse(bodyText);
+        } catch (error) {
+          payload = {};
+        }
+      }
+
+      if (!response.ok) {
+        var requestError = new Error(payload.message || "Request failed");
+        requestError.payload = payload;
+        throw requestError;
+      }
+
+      return payload;
+    });
+  }
+
+  function sanitizeDigits(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function toPositiveInt(value, fallback) {
+    var parsed = Number(value);
+    if (isNaN(parsed) || parsed < 1) {
+      return fallback;
+    }
+    return Math.round(parsed);
+  }
+
+  function formatPercent(value) {
+    var rounded = Math.round(Number(value) * 100) / 100;
+    if (Math.round(rounded) === rounded) {
+      return String(Math.round(rounded));
+    }
+    return rounded.toFixed(2).replace(/\.?0+$/, "");
   }
 
   function formatMoney(cents) {

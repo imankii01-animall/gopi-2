@@ -2,6 +2,9 @@
 <script src="{{ 'animall-gopi.js' | asset_url }}" defer="defer"></script>
 
 {%- assign current_variant = product.selected_or_first_available_variant -%}
+{%- if current_variant == blank and product.variants.size > 0 -%}
+  {%- assign current_variant = product.variants.first -%}
+{%- endif -%}
 {%- assign tag_location = '' -%}
 {%- assign tag_type = '' -%}
 {%- assign tag_method = '' -%}
@@ -33,22 +36,43 @@
 {%- assign rating = product.metafields.custom.rating.value | default: section.settings.default_rating -%}
 {%- assign max_stock = current_variant.inventory_quantity | default: 0 -%}
 
+{%- assign premium_explanation = product.metafields.custom.premium_explanation.value | default: section.settings.default_premium_explanation -%}
+{%- assign production_steps_source = product.metafields.custom.production_steps.value | default: product.metafields.custom.production_process.value | default: section.settings.default_production_steps -%}
+{%- assign production_steps = production_steps_source | newline_to_br | split: '<br />' -%}
+{%- assign usage_guidelines_source = product.metafields.custom.platform_guidelines.value | default: product.metafields.custom.usage_guidelines.value | default: section.settings.default_usage_guidelines -%}
+{%- assign usage_guidelines = usage_guidelines_source | newline_to_br | split: '<br />' -%}
+{%- assign farm_gallery = product.metafields.custom.farm_gallery.value -%}
+
+{%- assign whatsapp_number = product.metafields.custom.whatsapp_number.value | default: section.settings.whatsapp_number -%}
+{%- assign whatsapp_prefill = product.metafields.custom.whatsapp_prefill.value | default: section.settings.whatsapp_prefill -%}
+{%- assign whatsapp_digits = whatsapp_number | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | remove: '+' -%}
+{%- assign whatsapp_link = '' -%}
+{%- if whatsapp_digits != blank -%}
+  {%- capture whatsapp_message -%}{{ whatsapp_prefill }} {{ product.title }}{%- endcapture -%}
+  {%- assign whatsapp_encoded_text = whatsapp_message | strip | url_encode -%}
+  {%- assign whatsapp_link = 'https://wa.me/' | append: whatsapp_digits | append: '?text=' | append: whatsapp_encoded_text -%}
+{%- endif -%}
+
+{%- assign commission_percent = section.settings.commission_percent | default: 10 -%}
+{%- assign initial_total_cents = current_variant.price | default: 0 -%}
+{%- assign initial_commission_cents = initial_total_cents | times: commission_percent | divided_by: 100 -%}
+{%- assign initial_net_cents = initial_total_cents | minus: initial_commission_cents -%}
+
 <section
   class="ag-order-page ag-reveal ag-reveal--entry"
   id="AnimallOrderFlow-{{ section.id }}"
   data-ag-order-flow
+  data-product-handle="{{ product.handle }}"
   data-unit-price="{{ current_variant.price }}"
   data-max-stock="{{ max_stock }}"
+  data-commission-rate="{{ commission_percent }}"
+  data-require-phone-verification="false"
   data-stock-flexible-label="{{ section.settings.stock_flexible_label | escape }}"
-  data-verify-note-default="{{ section.settings.phone_verify_hint | escape }}"
-  data-verify-note-invalid-phone="{{ section.settings.invalid_phone_label | escape }}"
-  data-verify-note-verified="{{ section.settings.phone_verified_label | escape }}"
-  data-verify-note-require-verify="{{ section.settings.verify_required_label | escape }}"
+  data-verify-note-not-required="{{ section.settings.verify_not_required_label | escape }}"
   data-verify-note-stock-exceeded="{{ section.settings.stock_exceeded_label | escape }}"
   data-verify-note-order-failed="{{ section.settings.order_failed_label | escape }}"
+  data-verify-note-stock-refresh-failed="{{ section.settings.stock_refresh_failed_label | escape }}"
   data-verify-note-sold-out="{{ section.settings.sold_out_note_label | escape }}"
-  data-verify-button-label="{{ section.settings.verify_button_label | escape }}"
-  data-verified-button-label="{{ section.settings.verified_button_label | escape }}"
   data-submit-ready-label="{{ section.settings.submit_ready_label | escape }}"
   data-submit-loading-label="{{ section.settings.submit_loading_label | escape }}"
   data-submit-sold-out-label="{{ section.settings.submit_sold_out_label | escape }}"
@@ -112,11 +136,119 @@
       </div>
     </div>
 
+    {%- if section.settings.show_story_sections -%}
+      <section class="ag-panel ag-info-panel">
+        <h3>{{ section.settings.premium_heading }}</h3>
+        <p class="ag-panel-copy">{{ premium_explanation | newline_to_br }}</p>
+      </section>
+
+      <section class="ag-panel ag-process-panel">
+        <h3>{{ section.settings.production_heading }}</h3>
+        {%- assign has_production_steps = false -%}
+        <ol class="ag-step-list">
+          {%- for raw_step in production_steps -%}
+            {%- assign step = raw_step | strip -%}
+            {%- if step != blank -%}
+              {%- assign has_production_steps = true -%}
+              <li>{{ step }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ol>
+        {%- unless has_production_steps -%}
+          <p class="ag-section-empty">{{ section.settings.no_production_steps_label }}</p>
+        {%- endunless -%}
+      </section>
+
+      <section class="ag-panel ag-gallery-panel">
+        <h3>{{ section.settings.gallery_heading }}</h3>
+        {%- assign rendered_gallery = false -%}
+        <div class="ag-gallery-grid">
+          {%- if farm_gallery != blank -%}
+            {%- for gallery_item in farm_gallery limit: 6 -%}
+              {%- assign gallery_image = gallery_item.preview_image | default: gallery_item -%}
+              {%- if gallery_image != blank -%}
+                {%- assign rendered_gallery = true -%}
+                <div class="ag-gallery-item">
+                  {{
+                    gallery_image
+                    | image_url: width: 560, height: 560, crop: 'center'
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '160,220,320,420,560',
+                      sizes: '(max-width: 749px) 46vw, 180px',
+                      alt: gallery_item.alt | default: farmer_name,
+                      class: 'ag-gallery-image'
+                  }}
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+
+          {%- unless rendered_gallery -%}
+            {%- for image in product.images offset: 1 limit: 6 -%}
+              {%- assign rendered_gallery = true -%}
+              <div class="ag-gallery-item">
+                {{
+                  image
+                  | image_url: width: 560, height: 560, crop: 'center'
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '160,220,320,420,560',
+                    sizes: '(max-width: 749px) 46vw, 180px',
+                    alt: image.alt | default: farmer_name,
+                    class: 'ag-gallery-image'
+                }}
+              </div>
+            {%- endfor -%}
+          {%- endunless -%}
+        </div>
+        {%- unless rendered_gallery -%}
+          <p class="ag-section-empty">{{ section.settings.gallery_empty_label }}</p>
+        {%- endunless -%}
+      </section>
+
+      <section class="ag-panel ag-guidelines-panel">
+        <h3>{{ section.settings.guidelines_heading }}</h3>
+        {%- assign has_guidelines = false -%}
+        <ul class="ag-guidelines-list">
+          {%- for raw_guideline in usage_guidelines -%}
+            {%- assign guideline = raw_guideline | strip -%}
+            {%- if guideline != blank -%}
+              {%- assign has_guidelines = true -%}
+              <li>{{ guideline }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+        {%- unless has_guidelines -%}
+          <p class="ag-section-empty">{{ section.settings.no_guidelines_label }}</p>
+        {%- endunless -%}
+      </section>
+
+      <section class="ag-panel ag-whatsapp-panel">
+        <h3>{{ section.settings.whatsapp_heading }}</h3>
+        <p class="ag-panel-copy">{{ section.settings.whatsapp_description }}</p>
+        {%- if whatsapp_link != blank -%}
+          <a class="ag-whatsapp-btn" href="{{ whatsapp_link }}" target="_blank" rel="noopener">
+            {{ section.settings.whatsapp_cta_label }}
+          </a>
+        {%- else -%}
+          <p class="ag-section-empty">{{ section.settings.whatsapp_missing_label }}</p>
+        {%- endif -%}
+      </section>
+    {%- endif -%}
+
     <form method="post" action="/cart/add" enctype="multipart/form-data" class="ag-order-form" data-ag-order-form>
       <input type="hidden" name="id" value="{{ current_variant.id }}" data-ag-variant-id>
       <input type="hidden" name="quantity" value="1" data-ag-quantity-input>
-      <input type="hidden" name="properties[Phone Verified]" value="No" data-ag-phone-verified-field>
+      <input type="hidden" name="properties[Phone Verified]" value="Not Required" data-ag-phone-verified-field>
       <input type="hidden" name="properties[Source]" value="Animall Gopi MVP">
+      <input type="hidden" name="properties[Farmer Name]" value="{{ farmer_name }}">
+      <input type="hidden" name="properties[Farmer Location]" value="{{ farmer_location }}">
+      <input type="hidden" name="properties[Ghee Type]" value="{{ ghee_type }}">
+      <input type="hidden" name="properties[Order Total]" value="{{ initial_total_cents | money_without_trailing_zeros }}" data-ag-order-total-property>
+      <input type="hidden" name="properties[Platform Commission]" value="{{ initial_commission_cents | money_without_trailing_zeros }}" data-ag-commission-property>
+      <input type="hidden" name="properties[Net Payable to Farmer]" value="{{ initial_net_cents | money_without_trailing_zeros }}" data-ag-net-payable-property>
+      <input type="hidden" name="properties[Commission Rate]" value="{{ commission_percent }}%" data-ag-commission-rate-property>
 
       <section class="ag-panel">
         <div class="ag-panel-heading">
@@ -156,12 +288,11 @@
               required
               data-ag-phone-input
             >
-            <button class="ag-verify-btn" type="button" data-ag-verify-btn>{{ section.settings.verify_button_label }}</button>
           </div>
         </label>
 
         <p class="ag-verify-note" data-ag-verify-note>
-          {{ section.settings.phone_verify_hint }}
+          {{ section.settings.verify_not_required_label }}
         </p>
 
         <label class="ag-field">
@@ -203,6 +334,17 @@
             <dt>{{ section.settings.quantity_label }}</dt>
             <dd><span data-ag-summary-qty>1</span> <span data-ag-unit-label>{{ section.settings.unit_label }}</span></dd>
           </div>
+          <div>
+            <dt>
+              {{ section.settings.commission_label }}
+              <span class="ag-commission-rate" data-ag-commission-rate-label>({{ commission_percent }}%)</span>
+            </dt>
+            <dd data-ag-summary-commission>{{ initial_commission_cents | money_without_trailing_zeros }}</dd>
+          </div>
+          <div>
+            <dt>{{ section.settings.net_payable_label }}</dt>
+            <dd data-ag-summary-net-payable>{{ initial_net_cents | money_without_trailing_zeros }}</dd>
+          </div>
           <div class="ag-summary-total">
             <dt>{{ section.settings.total_label }}</dt>
             <dd data-ag-summary-total>{{ current_variant.price | money_without_trailing_zeros }}</dd>
@@ -231,10 +373,12 @@
       <span aria-hidden="true">☐</span>
       <span>{{ section.settings.orders_label }}</span>
     </a>
-    <a class="ag-bottom-nav-link" href="{{ section.settings.profile_link | default: routes.account_url }}">
-      <span aria-hidden="true">◌</span>
-      <span>{{ section.settings.profile_label }}</span>
-    </a>
+    {%- if section.settings.emergent_badge_label != blank -%}
+      {%- assign badge_link = section.settings.emergent_badge_link | default: routes.root_url -%}
+      <a class="ag-bottom-nav-badge" href="{{ badge_link }}">
+        {{ section.settings.emergent_badge_label }}
+      </a>
+    {%- endif -%}
   </nav>
 </section>
 
@@ -259,7 +403,7 @@
       "type": "text",
       "id": "verify_button_text",
       "label": "Primary button default label",
-      "default": "Verify Phone to Continue"
+      "default": "Place Order & Pay"
     },
     {
       "type": "text",
@@ -278,6 +422,116 @@
       "id": "increase_qty_aria_label",
       "label": "Increase quantity accessibility label",
       "default": "Increase quantity"
+    },
+    {
+      "type": "header",
+      "content": "Product Detail Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_story_sections",
+      "label": "Show premium/process/gallery/guidelines/whatsapp sections",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "premium_heading",
+      "label": "Premium section heading",
+      "default": "Why this ghee is premium"
+    },
+    {
+      "type": "textarea",
+      "id": "default_premium_explanation",
+      "label": "Default premium explanation",
+      "default": "Traditional bilona churning, small-batch preparation, and transparent sourcing directly from the farmer."
+    },
+    {
+      "type": "text",
+      "id": "production_heading",
+      "label": "Production process heading",
+      "default": "Production process"
+    },
+    {
+      "type": "textarea",
+      "id": "default_production_steps",
+      "label": "Default production steps (one per line)",
+      "default": "Milk collection from farm\nCurd fermentation for 10-12 hours\nTraditional bilona churning\nSlow heat clarification and filtering"
+    },
+    {
+      "type": "text",
+      "id": "no_production_steps_label",
+      "label": "No production steps label",
+      "default": "Production process details will be updated soon."
+    },
+    {
+      "type": "text",
+      "id": "gallery_heading",
+      "label": "Farm gallery heading",
+      "default": "Farm gallery"
+    },
+    {
+      "type": "text",
+      "id": "gallery_empty_label",
+      "label": "Farm gallery empty label",
+      "default": "Farm gallery images are not available yet."
+    },
+    {
+      "type": "text",
+      "id": "guidelines_heading",
+      "label": "Usage guidelines heading",
+      "default": "Platform usage guidelines"
+    },
+    {
+      "type": "textarea",
+      "id": "default_usage_guidelines",
+      "label": "Default usage guidelines (one per line)",
+      "default": "Use this channel only for product quality and sourcing queries.\nDelivery ETA is confirmed after payment.\nOrders are processed by Animall operations team."
+    },
+    {
+      "type": "text",
+      "id": "no_guidelines_label",
+      "label": "No guidelines label",
+      "default": "Usage guidelines are not configured yet."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_heading",
+      "label": "WhatsApp section heading",
+      "default": "Quality queries on WhatsApp"
+    },
+    {
+      "type": "textarea",
+      "id": "whatsapp_description",
+      "label": "WhatsApp description",
+      "default": "For transparency and quality-related questions, contact Animall caller on WhatsApp."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_cta_label",
+      "label": "WhatsApp button label",
+      "default": "Chat on WhatsApp"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_missing_label",
+      "label": "WhatsApp missing label",
+      "default": "WhatsApp contact is not configured."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "Default WhatsApp number (country code + number)",
+      "default": "919876543210"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_prefill",
+      "label": "WhatsApp prefilled message prefix",
+      "default": "Hi Animall team, I have a quality query for"
+    },
+    {
+      "type": "header",
+      "content": "Order and Commission"
     },
     {
       "type": "text",
@@ -302,6 +556,15 @@
       "id": "unit_label",
       "label": "Unit label",
       "default": "kg"
+    },
+    {
+      "type": "range",
+      "id": "commission_percent",
+      "label": "Platform commission (%)",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 10
     },
     {
       "type": "text",
@@ -329,9 +592,25 @@
     },
     {
       "type": "text",
+      "id": "commission_label",
+      "label": "Commission line label",
+      "default": "Platform commission"
+    },
+    {
+      "type": "text",
+      "id": "net_payable_label",
+      "label": "Net payable line label",
+      "default": "Net payable to farmer"
+    },
+    {
+      "type": "text",
       "id": "total_label",
       "label": "Total label",
       "default": "Total"
+    },
+    {
+      "type": "header",
+      "content": "Customer Form Labels"
     },
     {
       "type": "text",
@@ -407,51 +686,21 @@
     },
     {
       "type": "text",
-      "id": "verify_button_label",
-      "label": "Verify button label",
-      "default": "Verify"
-    },
-    {
-      "type": "text",
-      "id": "verified_button_label",
-      "label": "Verified button label",
-      "default": "Verified"
-    },
-    {
-      "type": "text",
-      "id": "stock_flexible_label",
-      "label": "Stock label for untracked inventory",
-      "default": "25+"
-    },
-    {
-      "type": "text",
-      "id": "phone_verify_hint",
-      "label": "Phone verification hint",
-      "default": "Verify your phone number to continue."
-    },
-    {
-      "type": "text",
-      "id": "invalid_phone_label",
-      "label": "Invalid phone message",
-      "default": "Enter a valid 10-digit phone number."
-    },
-    {
-      "type": "text",
-      "id": "phone_verified_label",
-      "label": "Phone verified message",
-      "default": "Phone verified. You can place your order now."
-    },
-    {
-      "type": "text",
-      "id": "verify_required_label",
-      "label": "Verify required message",
-      "default": "Please verify your phone number before placing the order."
+      "id": "verify_not_required_label",
+      "label": "Phone message",
+      "default": "Place order directly after filling details."
     },
     {
       "type": "text",
       "id": "stock_exceeded_label",
       "label": "Stock exceeded message",
       "default": "Quantity exceeds available stock."
+    },
+    {
+      "type": "text",
+      "id": "stock_refresh_failed_label",
+      "label": "Stock refresh failed message",
+      "default": "Could not refresh live stock. Proceeding with current stock value."
     },
     {
       "type": "text",
@@ -482,6 +731,16 @@
       "id": "submit_sold_out_label",
       "label": "Submit sold out label",
       "default": "Sold Out"
+    },
+    {
+      "type": "text",
+      "id": "stock_flexible_label",
+      "label": "Stock label for untracked inventory",
+      "default": "25+"
+    },
+    {
+      "type": "header",
+      "content": "Fallback Product Data"
     },
     {
       "type": "text",
@@ -621,6 +880,17 @@
       "id": "profile_label",
       "label": "Bottom nav Profile text",
       "default": "Profile"
+    },
+    {
+      "type": "url",
+      "id": "emergent_badge_link",
+      "label": "Bottom badge link"
+    },
+    {
+      "type": "text",
+      "id": "emergent_badge_label",
+      "label": "Bottom badge text",
+      "default": "Made with Emergent"
     }
   ],
   "presets": [

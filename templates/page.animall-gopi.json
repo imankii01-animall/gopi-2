@@ -1,8 +1,31 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
       "type": "animall-gopi-marketplace",
-      "settings": {}
+      "settings": {
+        "heading": "Animall गोपी",
+        "wireframe_label": "Wireframe",
+        "location_all_label": "All Locations",
+        "search_placeholder": "Search farmers, ghee type...",
+        "filter_title": "Filter by ghee type",
+        "listings_found_label": "listings found",
+        "place_order_button_label": "Place Order",
+        "sold_out_button_label": "Sold Out",
+        "out_of_stock_label": "Sold out",
+        "home_label": "Home",
+        "orders_label": "Orders",
+        "profile_label": "Profile",
+        "emergent_badge_label": "Made with Emergent"
+      }
     }
   },
   "order": [
