@@ -1,0 +1,234 @@
+{%- style -%}
+  .trust-strip {
+    background: var(--animall-brand-paper, #fffdf7);
+    border-top: 1px solid rgba(221, 213, 191, 0.35);
+    border-bottom: 1px solid rgba(221, 213, 191, 0.35);
+    padding: 2rem 1rem;
+  }
+
+  .trust-strip__inner {
+    max-width: min(134rem, 94vw);
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem 3rem;
+  }
+
+  .trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--animall-brand-text, #2d2a23);
+    text-decoration: none;
+    transition: transform 200ms ease;
+  }
+
+  .trust-badge:hover {
+    transform: translateY(-1px);
+  }
+
+  .trust-badge__icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(217, 186, 109, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .trust-badge__icon svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--animall-brand-dark, #1f2129);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .trust-badge__text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .trust-badge__title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.2;
+  }
+
+  .trust-badge__subtitle {
+    font-size: 0.75rem;
+    color: var(--animall-brand-soft, #6c6556);
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .trust-strip__inner {
+      gap: 1.25rem 1.5rem;
+    }
+
+    .trust-badge__icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .trust-badge__icon svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="trust-strip" aria-label="{{ section.settings.heading | default: 'Why choose Animall Gopi' }}">
+  <div class="trust-strip__inner">
+
+    {%- if section.settings.badge_1_title != blank -%}
+      <div class="trust-badge">
+        <div class="trust-badge__icon">
+          {%- comment -%} FSSAI / Certified {%- endcomment -%}
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>
+        </div>
+        <div class="trust-badge__text">
+          <span class="trust-badge__title">{{ section.settings.badge_1_title }}</span>
+          {%- if section.settings.badge_1_subtitle != blank -%}
+            <span class="trust-badge__subtitle">{{ section.settings.badge_1_subtitle }}</span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.badge_2_title != blank -%}
+      <div class="trust-badge">
+        <div class="trust-badge__icon">
+          {%- comment -%} Farm Fresh {%- endcomment -%}
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M13 2.05A10 10 0 0122 12"/><path d="M17 8l-5 5"/><path d="M22 2l-5 5"/></svg>
+        </div>
+        <div class="trust-badge__text">
+          <span class="trust-badge__title">{{ section.settings.badge_2_title }}</span>
+          {%- if section.settings.badge_2_subtitle != blank -%}
+            <span class="trust-badge__subtitle">{{ section.settings.badge_2_subtitle }}</span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.badge_3_title != blank -%}
+      <div class="trust-badge">
+        <div class="trust-badge__icon">
+          {%- comment -%} Free Delivery {%- endcomment -%}
+          <svg viewBox="0 0 24 24"><rect x="1" y="6" width="15" height="13" rx="1"/><path d="M16 10h4l3 4v5h-7V10z"/><circle cx="5.5" cy="19.5" r="2.5"/><circle cx="18.5" cy="19.5" r="2.5"/></svg>
+        </div>
+        <div class="trust-badge__text">
+          <span class="trust-badge__title">{{ section.settings.badge_3_title }}</span>
+          {%- if section.settings.badge_3_subtitle != blank -%}
+            <span class="trust-badge__subtitle">{{ section.settings.badge_3_subtitle }}</span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.badge_4_title != blank -%}
+      <div class="trust-badge">
+        <div class="trust-badge__icon">
+          {%- comment -%} Secure Payment {%- endcomment -%}
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div class="trust-badge__text">
+          <span class="trust-badge__title">{{ section.settings.badge_4_title }}</span>
+          {%- if section.settings.badge_4_subtitle != blank -%}
+            <span class="trust-badge__subtitle">{{ section.settings.badge_4_subtitle }}</span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Trust Badges Strip",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section heading (screen reader)",
+      "default": "Why choose Animall Gopi"
+    },
+    {
+      "type": "header",
+      "content": "Badge 1"
+    },
+    {
+      "type": "text",
+      "id": "badge_1_title",
+      "label": "Title",
+      "default": "FSSAI Certified"
+    },
+    {
+      "type": "text",
+      "id": "badge_1_subtitle",
+      "label": "Subtitle",
+      "default": "100% food-safe ghee"
+    },
+    {
+      "type": "header",
+      "content": "Badge 2"
+    },
+    {
+      "type": "text",
+      "id": "badge_2_title",
+      "label": "Title",
+      "default": "Farm Fresh"
+    },
+    {
+      "type": "text",
+      "id": "badge_2_subtitle",
+      "label": "Subtitle",
+      "default": "Direct from Indian farmers"
+    },
+    {
+      "type": "header",
+      "content": "Badge 3"
+    },
+    {
+      "type": "text",
+      "id": "badge_3_title",
+      "label": "Title",
+      "default": "Free Delivery"
+    },
+    {
+      "type": "text",
+      "id": "badge_3_subtitle",
+      "label": "Subtitle",
+      "default": "Pan-India shipping"
+    },
+    {
+      "type": "header",
+      "content": "Badge 4"
+    },
+    {
+      "type": "text",
+      "id": "badge_4_title",
+      "label": "Title",
+      "default": "Secure Payment"
+    },
+    {
+      "type": "text",
+      "id": "badge_4_subtitle",
+      "label": "Subtitle",
+      "default": "UPI, cards & COD"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Badges Strip"
+    }
+  ]
+}
+{% endschema %}
