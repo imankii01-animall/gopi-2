@@ -1,0 +1,87 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Return & Refund Policy",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>We focus on food-quality transparency and fair resolution for delivery or quality issues.</p>"
+          }
+        }
+      },
+      "block_order": ["heading", "text"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 36,
+        "padding_bottom": 8
+      }
+    },
+    "details": {
+      "type": "collapsible-content",
+      "blocks": {
+        "r1": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Eligible cases",
+            "icon": "check_mark",
+            "row_content": "<p>Damaged package, wrong product, or proven quality issue reported within support window.</p>",
+            "page": ""
+          }
+        },
+        "r2": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Non-returnable cases",
+            "icon": "question_mark",
+            "row_content": "<p>Opened/used products without quality concerns or delay caused by incorrect address details.</p>",
+            "page": ""
+          }
+        },
+        "r3": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Refund timeline",
+            "icon": "return",
+            "row_content": "<p>Approved refunds are initiated to original payment method as per gateway/bank cycle.</p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": ["r1", "r2", "r3"],
+      "settings": {
+        "caption": "Policy",
+        "heading": "Return and refund details",
+        "heading_size": "h1",
+        "heading_alignment": "left",
+        "layout": "none",
+        "container_color_scheme": "scheme-2",
+        "color_scheme": "scheme-1",
+        "open_first_collapsible_row": true,
+        "image": "",
+        "image_ratio": "adapt",
+        "desktop_layout": "image_second",
+        "padding_top": 8,
+        "padding_bottom": 44
+      }
+    }
+  },
+  "order": ["intro", "details"]
+}

@@ -1,0 +1,87 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Shipping Policy",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Orders are dispatched after payment confirmation and processed based on stock availability and serviceable PIN coverage.</p>"
+          }
+        }
+      },
+      "block_order": ["heading", "text"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 36,
+        "padding_bottom": 8
+      }
+    },
+    "details": {
+      "type": "collapsible-content",
+      "blocks": {
+        "s1": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Dispatch timeline",
+            "icon": "stopwatch",
+            "row_content": "<p>Most orders are dispatched within 24-48 business hours after successful checkout.</p>",
+            "page": ""
+          }
+        },
+        "s2": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Delivery timeline",
+            "icon": "truck",
+            "row_content": "<p>Estimated delivery appears after PIN input on order page. Final ETA can vary by courier partner and destination.</p>",
+            "page": ""
+          }
+        },
+        "s3": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Serviceability",
+            "icon": "map_pin",
+            "row_content": "<p>Some PIN codes may be non-serviceable. In such cases, support team will contact for alternate options or refund.</p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": ["s1", "s2", "s3"],
+      "settings": {
+        "caption": "Policy",
+        "heading": "Shipping details",
+        "heading_size": "h1",
+        "heading_alignment": "left",
+        "layout": "none",
+        "container_color_scheme": "scheme-2",
+        "color_scheme": "scheme-1",
+        "open_first_collapsible_row": true,
+        "image": "",
+        "image_ratio": "adapt",
+        "desktop_layout": "image_second",
+        "padding_top": 8,
+        "padding_bottom": 44
+      }
+    }
+  },
+  "order": ["intro", "details"]
+}

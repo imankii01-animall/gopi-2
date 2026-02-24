@@ -1,0 +1,87 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Cancellation Policy",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Customers can request cancellation before dispatch. Once shipped, cancellation may not be available.</p>"
+          }
+        }
+      },
+      "block_order": ["heading", "text"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 36,
+        "padding_bottom": 8
+      }
+    },
+    "details": {
+      "type": "collapsible-content",
+      "blocks": {
+        "c1": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Before dispatch",
+            "icon": "check_mark",
+            "row_content": "<p>Cancellation requests are generally accepted before order dispatch confirmation.</p>",
+            "page": ""
+          }
+        },
+        "c2": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "After dispatch",
+            "icon": "truck",
+            "row_content": "<p>Orders already handed to courier cannot always be cancelled. Support will help with next steps.</p>",
+            "page": ""
+          }
+        },
+        "c3": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Refund after cancellation",
+            "icon": "return",
+            "row_content": "<p>Eligible cancellation refunds are initiated to original payment method.</p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": ["c1", "c2", "c3"],
+      "settings": {
+        "caption": "Policy",
+        "heading": "Cancellation details",
+        "heading_size": "h1",
+        "heading_alignment": "left",
+        "layout": "none",
+        "container_color_scheme": "scheme-2",
+        "color_scheme": "scheme-1",
+        "open_first_collapsible_row": true,
+        "image": "",
+        "image_ratio": "adapt",
+        "desktop_layout": "image_second",
+        "padding_top": 8,
+        "padding_bottom": 44
+      }
+    }
+  },
+  "order": ["intro", "details"]
+}

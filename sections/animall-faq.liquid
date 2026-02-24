@@ -1,0 +1,276 @@
+{%- style -%}
+  .animall-faq-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  .animall-faq__head {
+    margin-bottom: 1.8rem;
+    text-align: {{ section.settings.heading_alignment }};
+  }
+
+  .animall-faq__caption {
+    display: inline-block;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--color-foreground), 0.18);
+    padding: 0.3rem 0.9rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .animall-faq__groups {
+    display: grid;
+    gap: 1.8rem;
+  }
+
+  .animall-faq__group {
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 1.6rem;
+    background: rgba(var(--color-background), 0.85);
+    padding: 1.2rem;
+  }
+
+  .animall-faq__group h3 {
+    margin: 0 0 1rem;
+    font-size: 2rem;
+  }
+
+  .animall-faq__item {
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+
+  .animall-faq__item:first-of-type {
+    margin-top: 0;
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .animall-faq__item h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1.7rem;
+  }
+
+  .animall-faq__item .rte {
+    color: rgba(var(--color-foreground), 0.78);
+  }
+{%- endstyle -%}
+
+<section class="animall-faq-{{ section.id }} color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    <div class="animall-faq__head">
+      {%- if section.settings.caption != blank -%}
+        <p class="animall-faq__caption">{{ section.settings.caption }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="{{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <div class="rte">{{ section.settings.subheading }}</div>
+      {%- endif -%}
+    </div>
+
+    {%- assign groups = section.blocks | where: 'type', 'group' -%}
+    <div class="animall-faq__groups">
+      {%- for group in groups -%}
+        <article class="animall-faq__group" {{ group.shopify_attributes }}>
+          <h3>{{ group.settings.title }}</h3>
+          {%- assign faqs = section.blocks | where: 'type', 'faq' -%}
+          {%- assign has_group_faq = false -%}
+          {%- for faq in faqs -%}
+            {%- if faq.settings.group_key == group.settings.group_key -%}
+              {%- assign has_group_faq = true -%}
+              <div class="animall-faq__item" {{ faq.shopify_attributes }}>
+                <h4>{{ faq.settings.question }}</h4>
+                <div class="rte">{{ faq.settings.answer }}</div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- unless has_group_faq -%}
+            <p>{{ section.settings.empty_group_text }}</p>
+          {%- endunless -%}
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {%- assign faq_blocks = section.blocks | where: 'type', 'faq' -%}
+  {%- if faq_blocks.size > 0 -%}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {%- for faq in faq_blocks -%}
+            {
+              "@type": "Question",
+              "name": {{ faq.settings.question | strip_html | json }},
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": {{ faq.settings.answer | strip_html | json }}
+              }
+            }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Animall FAQ",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "caption",
+      "label": "Caption",
+      "default": "FAQ"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Frequently asked questions"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Small"
+        },
+        {
+          "value": "h1",
+          "label": "Medium"
+        },
+        {
+          "value": "h0",
+          "label": "Large"
+        }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "text",
+      "id": "empty_group_text",
+      "label": "Empty group text",
+      "default": "Questions will appear here once added."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "group",
+      "name": "Category",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Category title",
+          "default": "Ordering"
+        },
+        {
+          "type": "text",
+          "id": "group_key",
+          "label": "Category key",
+          "default": "ordering",
+          "info": "Use the same key in FAQ blocks to map questions to this category."
+        }
+      ]
+    },
+    {
+      "type": "faq",
+      "name": "FAQ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "group_key",
+          "label": "Category key",
+          "default": "ordering"
+        },
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "How can I place an order?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Select a farmer listing, choose quantity, fill delivery details, and proceed to checkout.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Animall FAQ",
+      "blocks": [
+        {
+          "type": "group"
+        },
+        {
+          "type": "faq"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

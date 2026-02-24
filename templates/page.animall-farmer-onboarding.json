@@ -1,0 +1,96 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Farmer Onboarding",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Animall Gopi partners with quality-focused dairy farmers. If you want to list your ghee, submit details and our team will verify and onboard.</p>"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Talk to onboarding team",
+            "button_link": "shopify://pages/contact",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": ["heading", "text", "button"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 36,
+        "padding_bottom": 8
+      }
+    },
+    "requirements": {
+      "type": "multicolumn",
+      "blocks": {
+        "r1": {
+          "type": "column",
+          "settings": {
+            "title": "Identity and location",
+            "text": "<p>Farmer name, village/district/state, and active contact number.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "r2": {
+          "type": "column",
+          "settings": {
+            "title": "Product quality details",
+            "text": "<p>Ghee type, process (Bilona/traditional), batch date, shelf life, and storage guidelines.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "r3": {
+          "type": "column",
+          "settings": {
+            "title": "Inventory and pricing",
+            "text": "<p>Pack sizes, available stock, and baseline price per kg for listing.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": ["r1", "r2", "r3"],
+      "settings": {
+        "title": "Minimum onboarding requirements",
+        "heading_size": "h1",
+        "image_width": "third",
+        "image_ratio": "adapt",
+        "columns_desktop": 3,
+        "column_alignment": "left",
+        "background_style": "primary",
+        "button_label": "",
+        "button_link": "",
+        "swipe_on_mobile": true,
+        "color_scheme": "scheme-1",
+        "columns_mobile": "1",
+        "padding_top": 8,
+        "padding_bottom": 44
+      }
+    }
+  },
+  "order": ["intro", "requirements"]
+}

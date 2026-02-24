@@ -1,0 +1,96 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Quality & Trust Standards",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Every listing on Animall Gopi is expected to follow clear quality, transparency, and hygiene standards before going live.</p>"
+          }
+        }
+      },
+      "block_order": ["heading", "text"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 36,
+        "padding_bottom": 8
+      }
+    },
+    "standards": {
+      "type": "collapsible-content",
+      "blocks": {
+        "c1": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Farmer verification",
+            "icon": "check_mark",
+            "row_content": "<p>We maintain verified farmer identity and location records before activating listings.</p>",
+            "page": ""
+          }
+        },
+        "c2": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Batch and process transparency",
+            "icon": "clipboard",
+            "row_content": "<p>Listings should include ghee type, production method, and batch freshness details where available.</p>",
+            "page": ""
+          }
+        },
+        "c3": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Storage and handling",
+            "icon": "box",
+            "row_content": "<p>Storage and usage guidelines are shared to preserve product quality during shipping and customer use.</p>",
+            "page": ""
+          }
+        },
+        "c4": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Issue escalation",
+            "icon": "chat_bubble",
+            "row_content": "<p>Customers can escalate quality concerns through contact channels for prompt support.</p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": ["c1", "c2", "c3", "c4"],
+      "settings": {
+        "caption": "Animall Standards",
+        "heading": "How we maintain trust",
+        "heading_size": "h1",
+        "heading_alignment": "left",
+        "layout": "none",
+        "container_color_scheme": "scheme-2",
+        "color_scheme": "scheme-1",
+        "open_first_collapsible_row": true,
+        "image": "",
+        "image_ratio": "adapt",
+        "desktop_layout": "image_second",
+        "padding_top": 8,
+        "padding_bottom": 44
+      }
+    }
+  },
+  "order": ["intro", "standards"]
+}

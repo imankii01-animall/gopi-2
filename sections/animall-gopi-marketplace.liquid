@@ -69,6 +69,26 @@
     <p class="ag-results"><span data-ag-visible-count>{{ total_products }}</span> {{ section.settings.listings_found_label }}</p>
 
     <div class="ag-listings" data-ag-listings>
+      {%- comment -%}Skeleton loading cards shown until JS renders{%- endcomment -%}
+      <div class="ag-skeleton-card ag-skeleton-placeholder" aria-hidden="true">
+        <div class="ag-skeleton-avatar"></div>
+        <div class="ag-skeleton-lines">
+          <div class="ag-skeleton-line ag-skeleton-line--medium"></div>
+          <div class="ag-skeleton-line ag-skeleton-line--short"></div>
+          <div class="ag-skeleton-line"></div>
+        </div>
+        <div class="ag-skeleton-btn"></div>
+      </div>
+      <div class="ag-skeleton-card ag-skeleton-placeholder" aria-hidden="true">
+        <div class="ag-skeleton-avatar"></div>
+        <div class="ag-skeleton-lines">
+          <div class="ag-skeleton-line ag-skeleton-line--medium"></div>
+          <div class="ag-skeleton-line ag-skeleton-line--short"></div>
+          <div class="ag-skeleton-line"></div>
+        </div>
+        <div class="ag-skeleton-btn"></div>
+      </div>
+
       {%- if source_collection != blank and source_collection.products_count > 0 -%}
         {%- for product in source_collection.products -%}
           {%- assign featured_variant = product.selected_or_first_available_variant -%}
@@ -128,16 +148,30 @@
             <div class="ag-card-main">
               <div class="ag-card-media">
                 {%- if product.featured_image -%}
-                  {{
-                    product.featured_image
-                    | image_url: width: 280, height: 280, crop: 'center'
-                    | image_tag:
-                      loading: 'lazy',
-                      widths: '100,140,180,220,280',
-                      sizes: '(max-width: 749px) 92px, 108px',
-                      alt: farmer_name,
-                      class: 'ag-card-image'
-                  }}
+                  {%- if forloop.first -%}
+                    {{
+                      product.featured_image
+                      | image_url: width: 280, height: 280, crop: 'center'
+                      | image_tag:
+                        loading: 'eager',
+                        fetchpriority: 'high',
+                        widths: '100,140,180,220,280',
+                        sizes: '(max-width: 749px) 92px, 108px',
+                        alt: farmer_name,
+                        class: 'ag-card-image'
+                    }}
+                  {%- else -%}
+                    {{
+                      product.featured_image
+                      | image_url: width: 280, height: 280, crop: 'center'
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '100,140,180,220,280',
+                        sizes: '(max-width: 749px) 92px, 108px',
+                        alt: farmer_name,
+                        class: 'ag-card-image'
+                    }}
+                  {%- endif -%}
                 {%- else -%}
                   <div class="ag-card-image ag-card-image--placeholder">{{ farmer_name | slice: 0 }}</div>
                 {%- endif -%}
@@ -183,6 +217,30 @@
         <p class="ag-empty-state">{{ section.settings.empty_collection_label }}</p>
       {%- endif -%}
     </div>
+
+    {%- comment -%}GA4 view_item_list event{%- endcomment -%}
+    {%- if source_collection != blank and source_collection.products_count > 0 -%}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          if (typeof window.gtag === 'function') {
+            window.gtag('event', 'view_item_list', {
+              item_list_id: {{ source_collection.handle | json }},
+              item_list_name: {{ source_collection.title | json }},
+              items: [
+                {%- for product in source_collection.products limit: 20 -%}
+                  {
+                    item_id: {{ product.variants.first.id | json }},
+                    item_name: {{ product.title | json }},
+                    index: {{ forloop.index0 }},
+                    price: {{ product.price | divided_by: 100.0 }}
+                  }{%- unless forloop.last -%},{%- endunless -%}
+                {%- endfor -%}
+              ]
+            });
+          }
+        });
+      </script>
+    {%- endif -%}
   </div>
 
   <nav class="ag-bottom-nav" aria-label="Mobile navigation">
