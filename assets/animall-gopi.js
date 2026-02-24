@@ -58,6 +58,60 @@
     }
   }
 
+  /* ── UTM persistence ────────────────────────────────── */
+  var UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+
+  function captureUtmParams() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var found = false;
+      UTM_KEYS.forEach(function (key) {
+        var val = params.get(key);
+        if (val) {
+          sessionStorage.setItem("ag_" + key, val);
+          found = true;
+        }
+      });
+      /* If we landed with UTMs, also store the landing page */
+      if (found) {
+        sessionStorage.setItem("ag_utm_landing", window.location.pathname);
+      }
+    } catch (e) { /* sessionStorage unavailable */ }
+  }
+
+  function getStoredUtm(key) {
+    try { return sessionStorage.getItem("ag_" + key) || ""; }
+    catch (e) { return ""; }
+  }
+
+  function injectUtmFields(form) {
+    UTM_KEYS.forEach(function (key) {
+      var val = getStoredUtm(key);
+      if (val) {
+        var input = form.querySelector("[name='properties[" + key + "]']");
+        if (!input) {
+          input = document.createElement("input");
+          input.type = "hidden";
+          input.name = "properties[" + key + "]";
+          form.appendChild(input);
+        }
+        input.value = val;
+      }
+    });
+    /* Landing page */
+    var landing = getStoredUtm("utm_landing");
+    if (landing) {
+      var lp = form.querySelector("[name='properties[Landing Page]']");
+      if (!lp) {
+        lp = document.createElement("input");
+        lp.type = "hidden";
+        lp.name = "properties[Landing Page]";
+        form.appendChild(lp);
+      }
+      lp.value = landing;
+    }
+  }
+
   /* ── Indian PIN → City/State lookup (top metros) ──────── */
   var PIN_CITY_MAP = {
     "110": { city: "New Delhi", state: "Delhi" },
@@ -135,6 +189,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    captureUtmParams();
     initRevealEffects(document);
 
     document
@@ -406,10 +461,20 @@
       etaRegular: root.dataset.etaRegularLabel || "Estimated delivery: 4-6 business days.",
       etaUnserviceable:
         root.dataset.etaUnserviceableLabel ||
-        "This PIN may not be serviceable. Our team will confirm after checkout."
+        "This PIN may not be serviceable. Our team will confirm after checkout.",
+      codAvailable:
+        root.dataset.codAvailableLabel ||
+        "Cash on delivery is available for this PIN code.",
+      codUnavailable:
+        root.dataset.codUnavailableLabel ||
+        "Cash on delivery is not available for this PIN code. Prepaid only."
     };
     var metroPinPrefixes = parsePrefixes(root.dataset.metroPinPrefixes);
     var unserviceablePinPrefixes = parsePrefixes(root.dataset.unserviceablePinPrefixes);
+    var codBlockedPrefixes = parsePrefixes(root.dataset.codBlockedPinPrefixes);
+
+    /* COD eligibility note element */
+    var codNote = root.querySelector("[data-ag-cod-note]");
 
     var commissionRatePercent = Number(root.dataset.commissionRate || 10);
     if (isNaN(commissionRatePercent) || commissionRatePercent < 0) {
@@ -677,6 +742,33 @@
         var sanitizedPin = sanitizeDigits(pinInput.value).slice(0, 6);
         pinInput.value = sanitizedPin;
         setEtaText(getEtaText(sanitizedPin));
+
+        /* Auto-fill city/state from PIN prefix */
+        var cityLookup = lookupPinCity(sanitizedPin);
+        if (cityLookup) {
+          var cityField = form.querySelector("[name='properties[City]']");
+          var stateField = form.querySelector("[name='properties[State]']");
+          if (cityField && !cityField.value) cityField.value = cityLookup.city;
+          if (stateField && !stateField.value) stateField.value = cityLookup.state;
+        }
+
+        /* COD eligibility check */
+        if (codNote && sanitizedPin.length === 6) {
+          var codBlocked = matchesPrefix(sanitizedPin, codBlockedPrefixes) ||
+                           matchesPrefix(sanitizedPin, unserviceablePinPrefixes);
+          if (codBlocked) {
+            codNote.textContent = labels.codUnavailable;
+            codNote.classList.add("is-cod-blocked");
+            codNote.classList.remove("is-cod-available");
+          } else {
+            codNote.textContent = labels.codAvailable;
+            codNote.classList.add("is-cod-available");
+            codNote.classList.remove("is-cod-blocked");
+          }
+        } else if (codNote) {
+          codNote.textContent = "";
+          codNote.classList.remove("is-cod-available", "is-cod-blocked");
+        }
       });
     }
 
@@ -700,11 +792,35 @@
       });
     }
 
+    /* Inject UTM fields before validation */
+    injectUtmFields(form);
+
+    /* PII hidden field references */
+    var piiPhoneField = form.querySelector("[data-ag-phone-property]");
+    var piiAddressField = form.querySelector("[data-ag-address-property]");
+    var piiPinField = form.querySelector("[data-ag-pin-property]");
+
     form.addEventListener("submit", function (event) {
       event.preventDefault();
 
       if (isSubmitting) {
         return;
+      }
+
+      /* ── Copy PII to hidden underscore-prefixed fields ── */
+      if (piiPhoneField && phoneInput) piiPhoneField.value = phoneInput.value;
+      if (piiPinField && pinInput) piiPinField.value = pinInput.value;
+      if (piiAddressField) {
+        var addr1 = form.querySelector("[name='properties[Address Line 1]']");
+        var addr2 = form.querySelector("[name='properties[Address Line 2]']");
+        var cityField = form.querySelector("[name='properties[City]']");
+        var stateField = form.querySelector("[name='properties[State]']");
+        var parts = [];
+        if (addr1 && addr1.value) parts.push(addr1.value.trim());
+        if (addr2 && addr2.value) parts.push(addr2.value.trim());
+        if (cityField && cityField.value) parts.push(cityField.value.trim());
+        if (stateField && stateField.value) parts.push(stateField.value.trim());
+        piiAddressField.value = parts.join(", ");
       }
 
       /* ── Client-side validation ─────────────────────── */
@@ -761,6 +877,29 @@
           }
 
           var formData = new FormData(form);
+
+          /* ── Build structured order note for dispatch ─── */
+          var noteLines = [];
+          noteLines.push("--- Animall Gopi Order ---");
+          noteLines.push("Farmer: " + (root.querySelector("[name='properties[Farmer Name]']") || {}).value);
+          noteLines.push("Location: " + (root.querySelector("[name='properties[Farmer Location]']") || {}).value);
+          noteLines.push("Type: " + (root.querySelector("[name='properties[Ghee Type]']") || {}).value);
+          noteLines.push("Qty: " + quantity + " " + labels.unit);
+          noteLines.push("Commission: " + (commissionPropertyInput ? commissionPropertyInput.value : ""));
+          noteLines.push("Phone: " + (phoneInput ? phoneInput.value : ""));
+          noteLines.push("PIN: " + (pinInput ? pinInput.value : ""));
+          var cityInput = form.querySelector("[name='properties[City]']");
+          if (cityInput && cityInput.value) noteLines.push("City: " + cityInput.value);
+          noteLines.push("ETA: " + (etaPropertyInput ? etaPropertyInput.value : ""));
+          noteLines.push("---");
+
+          /* Append note to cart via separate AJAX call */
+          fetch("/cart/update.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ note: noteLines.join("\n") })
+          }).catch(function () { /* non-critical */ });
+
           return fetch("/cart/add.js", {
             method: "POST",
             body: formData,
@@ -793,9 +932,32 @@
             setVerifyMessage(labels.stockExceeded, "error");
             showToast(labels.stockExceeded, "error");
           } else {
-            var msg = (error && error.message) || labels.orderFailed;
+            /* ── Friendly error copy by failure type ─────── */
+            var rawMsg = (error && error.message) || "";
+            var payload = (error && error.payload) || {};
+            var msg = labels.orderFailed;
+
+            if (rawMsg.indexOf("422") !== -1 || payload.status === 422) {
+              msg = "This product is currently unavailable. Please refresh and try again.";
+            } else if (rawMsg.indexOf("429") !== -1 || payload.status === 429) {
+              msg = "Too many requests. Please wait a moment and try again.";
+            } else if (rawMsg.indexOf("network") !== -1 || rawMsg.indexOf("Failed to fetch") !== -1) {
+              msg = "Network error. Please check your connection and try again.";
+            } else if (rawMsg.indexOf("timeout") !== -1) {
+              msg = "Request timed out. Please try again.";
+            } else if (rawMsg) {
+              msg = rawMsg;
+            }
+
             setVerifyMessage(msg, "error");
             showToast(msg, "error");
+
+            /* GA4: track cart failure for funnel debugging */
+            trackEvent("cart_error", {
+              error_message: msg,
+              product_handle: root.dataset.productHandle || "",
+              quantity: quantity
+            });
           }
 
           isSubmitting = false;

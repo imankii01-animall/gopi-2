@@ -1,0 +1,74 @@
+{%- comment -%}
+  Meta governance: generate SEO-optimized <title> and <meta description>
+  per page type. Falls back to Shopify defaults gracefully.
+  Rendered in <head> BEFORE the default title/description tags.
+  Sets variables: ag_meta_title, ag_meta_description
+{%- endcomment -%}
+
+{%- assign ag_meta_title = '' -%}
+{%- assign ag_meta_description = '' -%}
+{%- assign ag_brand = 'Animall Gopi' -%}
+{%- assign ag_tagline = 'Farm-Fresh A2 Desi Ghee Direct from Farmers' -%}
+
+{%- case request.page_type -%}
+
+  {%- when 'index' -%}
+    {%- assign ag_meta_title = ag_brand | append: ' – ' | append: ag_tagline -%}
+    {%- assign ag_meta_description = 'Buy authentic A2 desi cow ghee and buffalo ghee directly from verified Indian farmers. Bilona churned, small-batch, delivered pan-India. ' | append: shop.name -%}
+
+  {%- when 'product' -%}
+    {%- assign sd_farmer = product.metafields.custom.farmer_name.value | default: product.vendor | default: product.title -%}
+    {%- assign sd_location = product.metafields.custom.farmer_location.value | default: '' -%}
+    {%- assign sd_type = product.metafields.custom.ghee_type.value | default: product.type | default: 'Desi Ghee' -%}
+    {%- assign ag_meta_title = sd_farmer | append: ' – ' | append: sd_type | append: ' from ' | append: sd_location | append: ' | ' | append: ag_brand -%}
+    {%- capture ag_meta_description -%}Order {{ sd_type }} from {{ sd_farmer }}, {{ sd_location }}. Bilona-churned, farm-fresh. Price: {{ product.price | money_without_trailing_zeros }}/kg. Buy on {{ ag_brand }}.{%- endcapture -%}
+
+  {%- when 'collection' -%}
+    {%- assign ag_meta_title = collection.title | append: ' – ' | append: ag_brand -%}
+    {%- if collection.description != blank -%}
+      {%- assign ag_meta_description = collection.description | strip_html | truncate: 155 -%}
+    {%- else -%}
+      {%- assign ag_meta_description = 'Browse ' | append: collection.title | append: ' – verified farmer listings for pure ghee. ' | append: ag_brand -%}
+    {%- endif -%}
+
+  {%- when 'page' -%}
+    {%- assign ag_meta_title = page.title | append: ' | ' | append: ag_brand -%}
+    {%- if page.content != blank -%}
+      {%- assign ag_meta_description = page.content | strip_html | truncate: 155 -%}
+    {%- else -%}
+      {%- assign ag_meta_description = page.title | append: ' – ' | append: ag_brand | append: '. Farm-fresh ghee marketplace.' -%}
+    {%- endif -%}
+
+  {%- when 'blog' -%}
+    {%- assign ag_meta_title = blog.title | append: ' | ' | append: ag_brand -%}
+    {%- assign ag_meta_description = 'Read about ghee, farming, and food quality on the ' | append: ag_brand | append: ' blog.' -%}
+
+  {%- when 'article' -%}
+    {%- assign ag_meta_title = article.title | append: ' | ' | append: ag_brand -%}
+    {%- if article.excerpt != blank -%}
+      {%- assign ag_meta_description = article.excerpt | strip_html | truncate: 155 -%}
+    {%- else -%}
+      {%- assign ag_meta_description = article.content | strip_html | truncate: 155 -%}
+    {%- endif -%}
+
+  {%- when 'search' -%}
+    {%- assign ag_meta_title = 'Search results | ' | append: ag_brand -%}
+    {%- assign ag_meta_description = 'Search results on ' | append: ag_brand | append: '. Find farm-fresh ghee from verified farmers.' -%}
+
+{%- endcase -%}
+
+{%- comment -%}Open Graph tags for social sharing{%- endcomment -%}
+{%- if ag_meta_title != blank -%}
+  <meta property="og:title" content="{{ ag_meta_title | escape }}">
+{%- endif -%}
+{%- if ag_meta_description != blank -%}
+  <meta property="og:description" content="{{ ag_meta_description | escape }}">
+{%- endif -%}
+<meta property="og:site_name" content="{{ shop.name | escape }}">
+<meta property="og:type" content="{% if request.page_type == 'product' %}product{% elsif request.page_type == 'article' %}article{% else %}website{% endif %}">
+<meta property="og:url" content="{{ canonical_url }}">
+{%- if request.page_type == 'product' and product.featured_image -%}
+  <meta property="og:image" content="{{ product.featured_image | image_url: width: 1200 | prepend: 'https:' }}">
+{%- elsif settings.logo != blank -%}
+  <meta property="og:image" content="{{ settings.logo | image_url: width: 1200 | prepend: 'https:' }}">
+{%- endif -%}

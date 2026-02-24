@@ -28,6 +28,7 @@
 
     {% render 'meta-tags' %}
     {% render 'animall-structured-data' %}
+    {% render 'animall-meta-governance' %}
 
     <script src="{{ 'constants.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'pubsub.js' | asset_url }}" defer="defer"></script>
@@ -312,6 +313,7 @@
     {% sections 'header-group' %}
 
     <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+      {% render 'animall-breadcrumbs' %}
       {{ content_for_layout }}
     </main>
 

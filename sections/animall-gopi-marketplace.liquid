@@ -121,6 +121,24 @@
           {%- assign ghee_type = product.metafields.custom.ghee_type.value | default: tag_type | default: product.type | default: section.settings.default_ghee_type -%}
           {%- assign production_method = product.metafields.custom.production_method.value | default: tag_method | default: section.settings.production_method_badge -%}
           {%- assign rating = product.metafields.custom.rating.value | default: section.settings.default_rating -%}
+
+          {%- comment -%}Merchandising badges from product tags{%- endcomment -%}
+          {%- assign is_bestseller = false -%}
+          {%- assign is_new = false -%}
+          {%- assign is_limited = false -%}
+          {%- for tag in product.tags -%}
+            {%- assign low_tag = tag | downcase | strip -%}
+            {%- if low_tag == 'bestseller' or low_tag == 'best-seller' or low_tag == 'badge:bestseller' -%}
+              {%- assign is_bestseller = true -%}
+            {%- endif -%}
+            {%- if low_tag == 'new' or low_tag == 'badge:new' or low_tag == 'new-arrival' -%}
+              {%- assign is_new = true -%}
+            {%- endif -%}
+            {%- if low_tag == 'limited' or low_tag == 'limited-batch' or low_tag == 'badge:limited' -%}
+              {%- assign is_limited = true -%}
+            {%- endif -%}
+          {%- endfor -%}
+
           {%- assign inventory_quantity = featured_variant.inventory_quantity | default: 0 -%}
           {%- assign stock_text = inventory_quantity | append: ' ' | append: section.settings.stock_suffix_label -%}
           {%- assign out_of_stock = false -%}
@@ -184,6 +202,15 @@
                 <div class="ag-card-badges">
                   <span class="ag-chip ag-chip--primary">{{ ghee_type }}</span>
                   <span class="ag-chip">{{ production_method }}</span>
+                  {%- if is_bestseller -%}
+                    <span class="ag-chip ag-chip--bestseller">🏆 Bestseller</span>
+                  {%- endif -%}
+                  {%- if is_new -%}
+                    <span class="ag-chip ag-chip--new">✨ New</span>
+                  {%- endif -%}
+                  {%- if is_limited -%}
+                    <span class="ag-chip ag-chip--limited">🔥 Limited Batch</span>
+                  {%- endif -%}
                 </div>
 
                 <p class="ag-card-price">{{ featured_variant.price | money_without_trailing_zeros }}<span>/kg</span></p>
