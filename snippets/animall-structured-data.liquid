@@ -1,0 +1,80 @@
+{%- assign org_logo = '' -%}
+{%- if settings.logo != blank -%}
+  {%- assign org_logo = settings.logo | image_url: width: 400 | prepend: 'https:' -%}
+{%- endif -%}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    "url": {{ request.origin | json }},
+    "logo": {{ org_logo | json }},
+    "sameAs": [
+      {%- assign social_links = '' -%}
+      {%- if settings.social_instagram_link != blank -%}
+        {{ settings.social_instagram_link | json }}{%- assign social_links = '1' -%}
+      {%- endif -%}
+      {%- if settings.social_facebook_link != blank -%}
+        {%- if social_links != blank -%},{%- endif -%}{{ settings.social_facebook_link | json }}{%- assign social_links = '1' -%}
+      {%- endif -%}
+      {%- if settings.social_youtube_link != blank -%}
+        {%- if social_links != blank -%},{%- endif -%}{{ settings.social_youtube_link | json }}
+      {%- endif -%}
+    ]
+  }
+</script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {{ shop.name | json }},
+    "url": {{ request.origin | json }},
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {%- capture sd_search_url -%}{{ request.origin }}{{ routes.search_url }}?q={search_term_string}{%- endcapture -%}{{ sd_search_url | json }},
+      "query-input": "required name=search_term_string"
+    }
+  }
+</script>
+
+{%- if request.page_type == 'product' and product != blank -%}
+  {%- assign sd_variant = product.selected_or_first_available_variant | default: product.variants.first -%}
+  {%- assign sd_price = sd_variant.price | divided_by: 100.0 -%}
+  {%- assign sd_available = sd_variant.available -%}
+  {%- assign sd_image = product.featured_image | image_url: width: 1200 | prepend: 'https:' -%}
+  {%- assign sd_rating = product.metafields.custom.rating.value | default: '4.8' -%}
+  {%- assign sd_farmer = product.metafields.custom.farmer_name.value | default: product.vendor -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": {{ product.title | json }},
+      "url": {{ request.origin | append: product.url | json }},
+      "image": {{ sd_image | json }},
+      "description": {{ product.description | strip_html | truncate: 500 | json }},
+      "sku": {{ sd_variant.sku | default: sd_variant.id | json }},
+      "brand": {
+        "@type": "Brand",
+        "name": {{ sd_farmer | json }}
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": {{ request.origin | append: product.url | json }},
+        "priceCurrency": "INR",
+        "price": {{ sd_price | json }},
+        "availability": {% if sd_available %}"https://schema.org/InStock"{% else %}"https://schema.org/OutOfStock"{% endif %},
+        "seller": {
+          "@type": "Organization",
+          "name": {{ shop.name | json }}
+        }
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": {{ sd_rating | json }},
+        "bestRating": "5",
+        "ratingCount": "1"
+      }
+    }
+  </script>
+{%- endif -%}
