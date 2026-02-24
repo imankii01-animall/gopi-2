@@ -1,0 +1,88 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "title": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "How ordering works",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Order flow is designed to be simple and transparent for every customer.</p>"
+          }
+        }
+      },
+      "block_order": ["heading", "text"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 36,
+        "padding_bottom": 12
+      }
+    },
+    "steps": {
+      "type": "multicolumn",
+      "blocks": {
+        "s1": {
+          "type": "column",
+          "settings": {
+            "title": "1. Explore farmers",
+            "text": "<p>Open the marketplace page and filter listings by location or ghee type.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "s2": {
+          "type": "column",
+          "settings": {
+            "title": "2. Select product",
+            "text": "<p>Open a listing to view farmer details, price per kg, and available quantity.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "s3": {
+          "type": "column",
+          "settings": {
+            "title": "3. Place order",
+            "text": "<p>Enter quantity and address details, then continue to secure checkout.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": ["s1", "s2", "s3"],
+      "settings": {
+        "title": "Step-by-step flow",
+        "heading_size": "h1",
+        "image_width": "third",
+        "image_ratio": "adapt",
+        "columns_desktop": 3,
+        "column_alignment": "left",
+        "background_style": "primary",
+        "button_label": "Open Marketplace",
+        "button_link": "shopify://pages/animall-gopi",
+        "swipe_on_mobile": true,
+        "color_scheme": "scheme-1",
+        "columns_mobile": "1",
+        "padding_top": 8,
+        "padding_bottom": 44
+      }
+    }
+  },
+  "order": ["title", "steps"]
+}

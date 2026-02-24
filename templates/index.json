@@ -15,24 +15,24 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Farm-fresh Bilona ghee, directly from trusted farmers",
+            "heading": "Animall Gopi: pure Bilona ghee, direct from trusted farmers",
             "heading_size": "h0"
           }
         },
         "text": {
           "type": "text",
           "settings": {
-            "text": "Discover authentic ghee batches with transparent farmer details and quick doorstep ordering.",
+            "text": "Farmer-first marketplace with transparent sourcing, farmer details, and direct checkout.",
             "text_style": "body"
           }
         },
         "button": {
           "type": "buttons",
           "settings": {
-            "button_label_1": "Explore Farmers",
+            "button_label_1": "Explore Farmer Marketplace",
             "button_link_1": "shopify://pages/animall-gopi",
             "button_style_secondary_1": false,
-            "button_label_2": "All Products",
+            "button_label_2": "Browse All Ghee",
             "button_link_2": "shopify://collections/all",
             "button_style_secondary_2": true
           }
@@ -51,14 +51,47 @@
         "show_text_below": true
       }
     },
-    "trust_row": {
+    "marketplace_intro": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Shop by farmer, not just by product",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Each listing includes farmer profile, location, ghee type, available stock, and transparent pricing per kg. You can compare listings and place order in a few steps.</p>"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Open Marketplace Page",
+            "button_link": "shopify://pages/animall-gopi",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": ["heading", "text", "button"],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "full_width": false,
+        "padding_top": 24,
+        "padding_bottom": 12
+      }
+    },
+    "trust_points": {
       "type": "multicolumn",
       "blocks": {
         "column_1": {
           "type": "column",
           "settings": {
-            "title": "Direct from farmers",
-            "text": "<p>No middlemen. Better value for families and better income for farmers.</p>",
+            "title": "Verified farmer details",
+            "text": "<p>Farmer name, location, and product method are visible on every listing.</p>",
             "link_label": "",
             "link": ""
           }
@@ -66,8 +99,8 @@
         "column_2": {
           "type": "column",
           "settings": {
-            "title": "Traditional Bilona",
-            "text": "<p>Small-batch, slow-crafted process with clear production details on each listing.</p>",
+            "title": "Traditional Bilona process",
+            "text": "<p>Detailed process and premium explanation can be shown on product order pages.</p>",
             "link_label": "",
             "link": ""
           }
@@ -75,8 +108,8 @@
         "column_3": {
           "type": "column",
           "settings": {
-            "title": "Quick checkout",
-            "text": "<p>Simple farmer-wise selection, quantity controls, and smooth checkout handoff.</p>",
+            "title": "Direct checkout flow",
+            "text": "<p>Select quantity, add customer details, and continue to Shopify checkout directly.</p>",
             "link_label": "",
             "link": ""
           }
@@ -84,7 +117,7 @@
       },
       "block_order": ["column_1", "column_2", "column_3"],
       "settings": {
-        "title": "Why families choose Animall Gopi",
+        "title": "Why Animall Gopi works for families and farmers",
         "heading_size": "h1",
         "image_width": "third",
         "image_ratio": "adapt",
@@ -116,30 +149,30 @@
         "show_vendor": true,
         "show_rating": false,
         "columns_mobile": "2",
-        "padding_top": 12,
-        "padding_bottom": 36
+        "padding_top": 20,
+        "padding_bottom": 32
       }
     },
-    "cta": {
+    "final_cta": {
       "type": "rich-text",
       "blocks": {
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Ready to order from real farmers?",
+            "heading": "Ready to place your order?",
             "heading_size": "h1"
           }
         },
         "text": {
           "type": "text",
           "settings": {
-            "text": "<p>Open the marketplace page and place your order in a few steps.</p>"
+            "text": "<p>Go to the farmer marketplace, compare options, and place your order for fresh Bilona ghee.</p>"
           }
         },
         "button": {
           "type": "button",
           "settings": {
-            "button_label": "Open Marketplace",
+            "button_label": "Start Shopping",
             "button_link": "shopify://pages/animall-gopi",
             "button_style_secondary": false
           }
@@ -149,10 +182,10 @@
       "settings": {
         "color_scheme": "scheme-1",
         "full_width": false,
-        "padding_top": 20,
+        "padding_top": 16,
         "padding_bottom": 52
       }
     }
   },
-  "order": ["hero", "trust_row", "featured", "cta"]
+  "order": ["hero", "marketplace_intro", "trust_points", "featured", "final_cta"]
 }
