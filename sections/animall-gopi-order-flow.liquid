@@ -35,6 +35,7 @@
 {%- assign production_method = product.metafields.custom.production_method.value | default: tag_method | default: section.settings.production_method_badge -%}
 {%- assign rating = product.metafields.custom.rating.value | default: section.settings.default_rating -%}
 {%- assign max_stock = current_variant.inventory_quantity | default: 0 -%}
+{%- assign related_collection = collections[section.settings.related_collection] -%}
 
 {%- assign premium_explanation = product.metafields.custom.premium_explanation.value | default: section.settings.default_premium_explanation -%}
 {%- assign production_steps_source = product.metafields.custom.production_steps.value | default: product.metafields.custom.production_process.value | default: section.settings.default_production_steps -%}
@@ -44,6 +45,11 @@
 {%- assign farm_gallery = product.metafields.custom.farm_gallery.value -%}
 
 {%- assign whatsapp_number = product.metafields.custom.whatsapp_number.value | default: section.settings.whatsapp_number -%}
+
+{%- comment -%}Social proof data{%- endcomment -%}
+{%- assign total_orders = product.metafields.custom.total_orders.value | default: section.settings.default_total_orders -%}
+{%- assign repeat_buyer_pct = product.metafields.custom.repeat_buyer_pct.value | default: section.settings.default_repeat_buyer_pct -%}
+{%- assign review_count = product.metafields.custom.review_count.value | default: section.settings.default_review_count -%}
 {%- assign whatsapp_prefill = product.metafields.custom.whatsapp_prefill.value | default: section.settings.whatsapp_prefill -%}
 {%- assign whatsapp_digits = whatsapp_number | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | remove: '+' -%}
 {%- assign whatsapp_link = '' -%}
@@ -77,6 +83,15 @@
   data-submit-loading-label="{{ section.settings.submit_loading_label | escape }}"
   data-submit-sold-out-label="{{ section.settings.submit_sold_out_label | escape }}"
   data-unit-label="{{ section.settings.unit_label | escape }}"
+  data-eta-enter-pin-label="{{ section.settings.eta_enter_pin_label | escape }}"
+  data-eta-metro-label="{{ section.settings.eta_metro_label | escape }}"
+  data-eta-regular-label="{{ section.settings.eta_regular_label | escape }}"
+  data-eta-unserviceable-label="{{ section.settings.eta_unserviceable_label | escape }}"
+  data-metro-pin-prefixes="{{ section.settings.metro_pin_prefixes | escape }}"
+  data-unserviceable-pin-prefixes="{{ section.settings.unserviceable_pin_prefixes | escape }}"
+  data-cod-blocked-pin-prefixes="{{ section.settings.cod_blocked_pin_prefixes | escape }}"
+  data-cod-available-label="{{ section.settings.cod_available_label | escape }}"
+  data-cod-unavailable-label="{{ section.settings.cod_unavailable_label | escape }}"
   style="
     --ag-bg: {{ section.settings.bg_color }};
     --ag-surface: {{ section.settings.card_color }};
@@ -135,6 +150,30 @@
         <p class="ag-card-rating" aria-label="Rating {{ rating }}">★ {{ rating }}</p>
       </div>
     </div>
+
+    {%- comment -%}Social proof strip{%- endcomment -%}
+    {%- if total_orders != blank or repeat_buyer_pct != blank or review_count != blank -%}
+      <div class="ag-social-proof-strip">
+        {%- if total_orders != blank and total_orders != '0' -%}
+          <div class="ag-social-proof-item">
+            <span class="ag-social-proof-value">{{ total_orders }}+</span>
+            <span class="ag-social-proof-label">Orders</span>
+          </div>
+        {%- endif -%}
+        {%- if repeat_buyer_pct != blank and repeat_buyer_pct != '0' -%}
+          <div class="ag-social-proof-item">
+            <span class="ag-social-proof-value">{{ repeat_buyer_pct }}%</span>
+            <span class="ag-social-proof-label">Repeat Buyers</span>
+          </div>
+        {%- endif -%}
+        {%- if review_count != blank and review_count != '0' -%}
+          <div class="ag-social-proof-item">
+            <span class="ag-social-proof-value">★ {{ rating }}</span>
+            <span class="ag-social-proof-label">{{ review_count }} Reviews</span>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
 
     {%- if section.settings.show_story_sections -%}
       <section class="ag-panel ag-info-panel">
@@ -240,7 +279,6 @@
     <form method="post" action="/cart/add" enctype="multipart/form-data" class="ag-order-form" data-ag-order-form>
       <input type="hidden" name="id" value="{{ current_variant.id }}" data-ag-variant-id>
       <input type="hidden" name="quantity" value="1" data-ag-quantity-input>
-      <input type="hidden" name="properties[Phone Verified]" value="Not Required" data-ag-phone-verified-field>
       <input type="hidden" name="properties[Source]" value="Animall Gopi MVP">
       <input type="hidden" name="properties[Farmer Name]" value="{{ farmer_name }}">
       <input type="hidden" name="properties[Farmer Location]" value="{{ farmer_location }}">
@@ -249,6 +287,12 @@
       <input type="hidden" name="properties[Platform Commission]" value="{{ initial_commission_cents | money_without_trailing_zeros }}" data-ag-commission-property>
       <input type="hidden" name="properties[Net Payable to Farmer]" value="{{ initial_net_cents | money_without_trailing_zeros }}" data-ag-net-payable-property>
       <input type="hidden" name="properties[Commission Rate]" value="{{ commission_percent }}%" data-ag-commission-rate-property>
+      <input type="hidden" name="properties[Estimated Delivery]" value="{{ section.settings.eta_enter_pin_label }}" data-ag-eta-property>
+      <input type="hidden" name="properties[Payment Mode]" value="{{ section.settings.payment_methods_note }}">
+      {%- comment -%}PII fields hidden from storefront (underscore prefix){%- endcomment -%}
+      <input type="hidden" name="properties[_Customer Phone]" value="" data-ag-phone-property>
+      <input type="hidden" name="properties[_Delivery Address]" value="" data-ag-address-property>
+      <input type="hidden" name="properties[_Delivery PIN]" value="" data-ag-pin-property>
 
       <section class="ag-panel">
         <div class="ag-panel-heading">
@@ -318,8 +362,11 @@
 
         <label class="ag-field">
           <span>{{ section.settings.pin_label }}</span>
-          <input type="text" name="properties[PIN]" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="{{ section.settings.pin_placeholder }}" required>
+          <input type="text" name="properties[PIN]" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="{{ section.settings.pin_placeholder }}" required data-ag-pin-input>
         </label>
+
+        <p class="ag-eta-note" data-ag-eta-note>{{ section.settings.eta_enter_pin_label }}</p>
+        <p class="ag-cod-note" data-ag-cod-note></p>
       </section>
 
       <section class="ag-panel ag-summary-panel">
@@ -351,13 +398,70 @@
           </div>
         </dl>
 
+        <div class="ag-policy-strip">
+          <p>{{ section.settings.payment_methods_note }}</p>
+          <p>{{ section.settings.cod_note }}</p>
+          <p data-ag-eta-note-inline>{{ section.settings.eta_enter_pin_label }}</p>
+          <div class="ag-policy-links">
+            {%- if section.settings.shipping_policy_url != blank -%}
+              <a href="{{ section.settings.shipping_policy_url }}">{{ section.settings.shipping_policy_label }}</a>
+            {%- endif -%}
+            {%- if section.settings.return_policy_url != blank -%}
+              <a href="{{ section.settings.return_policy_url }}">{{ section.settings.return_policy_label }}</a>
+            {%- endif -%}
+            {%- if section.settings.cancellation_policy_url != blank -%}
+              <a href="{{ section.settings.cancellation_policy_url }}">{{ section.settings.cancellation_policy_label }}</a>
+            {%- endif -%}
+          </div>
+        </div>
+
         <p class="ag-summary-note">{{ section.settings.delivery_note }}</p>
       </section>
+
+      {%- if section.settings.show_related_products and related_collection != blank -%}
+        <section class="ag-panel">
+          <h3>{{ section.settings.related_heading }}</h3>
+          <div class="ag-related-grid">
+            {%- assign related_count = 0 -%}
+            {%- for related_product in related_collection.products -%}
+              {%- if related_product.handle != product.handle and related_count < section.settings.related_limit -%}
+                {%- assign related_variant = related_product.selected_or_first_available_variant -%}
+                {%- assign related_count = related_count | plus: 1 -%}
+                <a class="ag-related-card" href="{{ related_product.url }}?variant={{ related_variant.id }}">
+                  {%- if related_product.featured_image -%}
+                    {{
+                      related_product.featured_image
+                      | image_url: width: 180, height: 180, crop: 'center'
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '80,120,160,180',
+                        sizes: '(max-width: 749px) 92px, 120px',
+                        alt: related_product.title,
+                        class: 'ag-related-image'
+                    }}
+                  {%- endif -%}
+                  <span class="ag-related-title">{{ related_product.title }}</span>
+                  <span class="ag-related-price">{{ related_variant.price | money_without_trailing_zeros }}</span>
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        </section>
+      {%- endif -%}
 
       <button class="ag-submit-btn" type="submit" data-ag-submit-btn disabled>
         {{ section.settings.verify_button_text }}
       </button>
     </form>
+  </div>
+
+  {%- comment -%}Sticky summary bar for mobile{%- endcomment -%}
+  <div class="ag-sticky-summary" data-ag-sticky-summary>
+    <div>
+      <div class="ag-sticky-summary-total" data-ag-sticky-total>{{ current_variant.price | money_without_trailing_zeros }}</div>
+      <div class="ag-sticky-summary-detail"><span data-ag-sticky-qty>1</span> {{ section.settings.unit_label }} &middot; {{ section.settings.commission_label }} <span data-ag-sticky-commission>{{ initial_commission_cents | money_without_trailing_zeros }}</span></div>
+    </div>
+    <button class="ag-submit-btn" type="button" data-ag-sticky-pay-btn disabled>{{ section.settings.verify_button_text }}</button>
   </div>
 
   <script type="application/json" data-ag-variants-json>
@@ -609,6 +713,81 @@
       "default": "Total"
     },
     {
+      "type": "text",
+      "id": "payment_methods_note",
+      "label": "Payment methods note",
+      "default": "Pay securely at checkout via UPI, card, netbanking, or wallet."
+    },
+    {
+      "type": "text",
+      "id": "cod_note",
+      "label": "COD note",
+      "default": "Cash on delivery is available only in eligible pin codes."
+    },
+    {
+      "type": "text",
+      "id": "shipping_policy_label",
+      "label": "Shipping policy link label",
+      "default": "Shipping policy"
+    },
+    {
+      "type": "url",
+      "id": "shipping_policy_url",
+      "label": "Shipping policy URL"
+    },
+    {
+      "type": "text",
+      "id": "return_policy_label",
+      "label": "Return policy link label",
+      "default": "Return policy"
+    },
+    {
+      "type": "url",
+      "id": "return_policy_url",
+      "label": "Return policy URL"
+    },
+    {
+      "type": "text",
+      "id": "cancellation_policy_label",
+      "label": "Cancellation policy link label",
+      "default": "Cancellation policy"
+    },
+    {
+      "type": "url",
+      "id": "cancellation_policy_url",
+      "label": "Cancellation policy URL"
+    },
+    {
+      "type": "header",
+      "content": "Related Products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_products",
+      "label": "Show related products",
+      "default": true
+    },
+    {
+      "type": "collection",
+      "id": "related_collection",
+      "label": "Related products collection"
+    },
+    {
+      "type": "text",
+      "id": "related_heading",
+      "label": "Related section heading",
+      "default": "You may also like"
+    },
+    {
+      "type": "range",
+      "id": "related_limit",
+      "label": "Related products count",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
       "type": "header",
       "content": "Customer Form Labels"
     },
@@ -683,6 +862,59 @@
       "id": "pin_placeholder",
       "label": "PIN placeholder",
       "default": "6-digit PIN"
+    },
+    {
+      "type": "text",
+      "id": "eta_enter_pin_label",
+      "label": "ETA message before PIN entry",
+      "default": "Enter your PIN to see estimated delivery window."
+    },
+    {
+      "type": "text",
+      "id": "eta_metro_label",
+      "label": "ETA message for metro PINs",
+      "default": "Estimated delivery: 2-3 business days."
+    },
+    {
+      "type": "text",
+      "id": "eta_regular_label",
+      "label": "ETA message for regular PINs",
+      "default": "Estimated delivery: 4-6 business days."
+    },
+    {
+      "type": "text",
+      "id": "eta_unserviceable_label",
+      "label": "ETA message for unserviceable PINs",
+      "default": "This PIN may not be serviceable. Our team will confirm after checkout."
+    },
+    {
+      "type": "text",
+      "id": "metro_pin_prefixes",
+      "label": "Metro PIN prefixes (comma separated)",
+      "default": "11,12,40,41,50,56,60,70,75,80"
+    },
+    {
+      "type": "text",
+      "id": "unserviceable_pin_prefixes",
+      "label": "Unserviceable PIN prefixes (comma separated)"
+    },
+    {
+      "type": "text",
+      "id": "cod_blocked_pin_prefixes",
+      "label": "COD-blocked PIN prefixes (comma separated)",
+      "info": "PINs starting with these prefixes will show prepaid-only messaging."
+    },
+    {
+      "type": "text",
+      "id": "cod_available_label",
+      "label": "COD available message",
+      "default": "Cash on delivery is available for this PIN code."
+    },
+    {
+      "type": "text",
+      "id": "cod_unavailable_label",
+      "label": "COD unavailable message",
+      "default": "Cash on delivery is not available for this PIN code. Prepaid only."
     },
     {
       "type": "text",
@@ -891,6 +1123,28 @@
       "id": "emergent_badge_label",
       "label": "Bottom badge text",
       "default": "Made with Emergent"
+    },
+    {
+      "type": "header",
+      "content": "Social Proof"
+    },
+    {
+      "type": "text",
+      "id": "default_total_orders",
+      "label": "Default total orders count (fallback)",
+      "default": "0"
+    },
+    {
+      "type": "text",
+      "id": "default_repeat_buyer_pct",
+      "label": "Default repeat buyer percentage (fallback)",
+      "default": "0"
+    },
+    {
+      "type": "text",
+      "id": "default_review_count",
+      "label": "Default review count (fallback)",
+      "default": "0"
     }
   ],
   "presets": [
